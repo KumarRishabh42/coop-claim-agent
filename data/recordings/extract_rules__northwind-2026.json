@@ -1,0 +1,155 @@
+{
+  "result": {
+    "rules": [
+      {
+        "id": "R1",
+        "title": "Accrual rate, reimbursement rate and excluded fees",
+        "kind": "measured",
+        "applies_to": [],
+        "check": {
+          "type": "funds_terms",
+          "rate": 0.5,
+          "accrual_rate": 0.02,
+          "excluded_categories": ["agency fee", "management fee"]
+        },
+        "source": {
+          "section": "1",
+          "quote": "reimbursed at 50% of cost, up to the dealer's available balance. Agency and management fees are not reimbursed."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R2",
+        "title": "Eligible advertising media",
+        "kind": "measured",
+        "applies_to": [],
+        "check": {
+          "type": "eligible_media",
+          "allowed": ["direct_mail", "newspaper", "radio", "paid_social", "paid_search"],
+          "excluded": ["directories", "sponsorships", "apparel", "promotional_items"]
+        },
+        "source": {
+          "section": "2",
+          "quote": "Eligible: direct mail, newspaper, radio, paid social, paid search."
+        },
+        "on_fail": "Choose an eligible medium: direct mail, newspaper, radio, paid social or paid search."
+      },
+      {
+        "id": "R3",
+        "title": "Brand logo minimum size",
+        "kind": "measured",
+        "applies_to": ["direct_mail", "newspaper", "paid_social"],
+        "check": {
+          "type": "logo_size",
+          "min_width_in": 1.0,
+          "min_ratio_to_dealer_logo": 0.5
+        },
+        "source": {
+          "section": "3",
+          "quote": "at least 1 inch wide and at least half the width of the dealer's logo"
+        },
+        "on_fail": "Enlarge the Northwind logo to at least {required_in} in."
+      },
+      {
+        "id": "R4",
+        "title": "Required tagline",
+        "kind": "measured",
+        "applies_to": [],
+        "check": {
+          "type": "required_text",
+          "text": "Comfort you can count on"
+        },
+        "source": {
+          "section": "4",
+          "quote": "\"Comfort you can count on\" must appear in the ad or be spoken in the script."
+        },
+        "on_fail": "Add \"Comfort you can count on\" to the ad or script."
+      },
+      {
+        "id": "R5",
+        "title": "Free offers need territory manager approval",
+        "kind": "judgment",
+        "applies_to": [],
+        "check": {
+          "type": "restricted_offer",
+          "trigger_words": ["free"],
+          "requires_doc": "territory_manager_approval"
+        },
+        "source": {
+          "section": "5",
+          "quote": "Ads offering \"free\" equipment require written approval from your territory manager before they run."
+        },
+        "on_fail": "Upload the territory manager's written approval for the free offer."
+      },
+      {
+        "id": "R6",
+        "title": "No competing brands",
+        "kind": "measured",
+        "applies_to": [],
+        "check": {
+          "type": "no_competing_brands"
+        },
+        "source": {
+          "section": "6",
+          "quote": "No other heating or cooling brand may appear in the ad."
+        },
+        "on_fail": "Remove the competing brand from the ad."
+      },
+      {
+        "id": "R7",
+        "title": "Activity and claim submission dates",
+        "kind": "measured",
+        "applies_to": [],
+        "check": {
+          "type": "date_window",
+          "activity_start": "2026-01-01",
+          "activity_end": "2026-12-31",
+          "claim_within_days": 60,
+          "claim_by": "2026-12-15"
+        },
+        "source": {
+          "section": "7",
+          "quote": "Claims must be submitted within 60 days of the vendor invoice date and no later than December 15, 2026."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R8",
+        "title": "Required documents",
+        "kind": "measured",
+        "applies_to": [],
+        "check": {
+          "type": "required_documents",
+          "docs": ["ad", "invoice", "payment", "claim_form"],
+          "extra_by_medium": {"radio": ["affidavit"]}
+        },
+        "source": {
+          "section": "8",
+          "quote": "Each claim needs a copy of the ad or script, the vendor invoice, and proof of payment."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R9",
+        "title": "Amounts must agree",
+        "kind": "measured",
+        "applies_to": [],
+        "check": {
+          "type": "amounts_match",
+          "tolerance_usd": 1.0
+        },
+        "source": {
+          "section": "9",
+          "quote": "The claim form, invoice and proof of payment must agree."
+        },
+        "on_fail": null
+      }
+    ]
+  },
+  "usage": {
+    "model": "claude-sonnet-5",
+    "tokens_in": 640,
+    "tokens_out": 980,
+    "cost_usd": 0.01659
+  }
+}

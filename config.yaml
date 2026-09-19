@@ -1,0 +1,33 @@
+# Co-op claim agent configuration.
+# Model name and prices come from the provider's published pricing page —
+# check before changing these. Do not hardcode a model name or price in code.
+
+model:
+  provider: anthropic
+  # DECISION: Claude Sonnet is the multimodal, structured-output model used
+  # for every model call in this repo (rule extraction, ad pre-check, document
+  # extraction). One model, one wrapper (agent/llm.py), per spec section 10.
+  name: claude-sonnet-5
+  max_tokens: 4096
+  # USD per token, from claude.com/pricing as of 2026-09-19: $2/MTok in,
+  # $10/MTok out for Claude Sonnet 5. Update alongside the model name if it
+  # changes — never hardcode a price from memory.
+  price_in_per_token: 0.000002
+  price_out_per_token: 0.00001
+
+policy:
+  auto_file_threshold_usd: 500.0
+  # For measured rules (e.g. logo_size): if the measured value is within this
+  # fraction of the threshold, the verdict is "unsure" instead of pass/fail.
+  unsure_band_fraction: 0.10
+  amounts_match_tolerance_usd: 1.00
+
+program:
+  id: northwind-2026
+  dealer_id: summit
+
+paths:
+  database_url: "sqlite:///coop.db"
+  guides_dir: data/guides
+  packets_dir: data/packets
+  recordings_dir: data/recordings

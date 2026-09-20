@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Program · Co-op claim agent{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h1 style="margin:0 0 4px;">{{ program["name"] if program else "Program" }} {{ program["year"] if program else "" }}</h1>
+  <p class="muted" style="margin:0;">Rules extracted from the guide below, each with the section it came from and a verbatim quote. Citations are checked in code against the guide text &mdash; a quote that doesn't match is flagged, not trusted.</p>
+</div>
+
+<div class="card">
+  <h2>Rules ({{ rules | length }})</h2>
+  {% for r in rules %}
+  <div class="check {{ 'fail' if not r.quote_verified else 'pass' }}">
+    <div class="check-head">
+      <span class="check-rule">{{ r.id }} &middot; {{ r.title }}</span>
+      <span>
+        <span class="pill neutral">{{ r.kind }}</span>
+        {% if not r.quote_verified %}<span class="pill bad">quote unverified</span>{% endif %}
+      </span>
+    </div>
+    <div class="check-message">Section {{ r.source_section }}: &ldquo;{{ r.source_quote }}&rdquo;</div>
+    {% if r.applies_to %}<div class="check-meta">Applies to: {{ r.applies_to | join(", ") }}</div>{% endif %}
+    {% if r.on_fail %}<div class="check-fix">{{ r.on_fail }}</div>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <h2>Guide text</h2>
+  <pre class="guide">{{ guide_text }}</pre>
+</div>
+
+{% endblock %}

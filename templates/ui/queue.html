@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Queue · Co-op claim agent{% endblock %}
+{% block content %}
+
+<div class="card">
+  <h1 style="margin:0 0 4px;">Human queue</h1>
+  <p class="muted" style="margin:0;">Everything waiting on approval, an answer, or a missing document.</p>
+</div>
+
+<div class="card">
+  {% if claims %}
+  <table>
+    <thead><tr><th>Claim</th><th>Medium</th><th class="num">Payable if resolved</th><th>Decision</th><th></th></tr></thead>
+    <tbody>
+      {% for c in claims %}
+      <tr>
+        <td>{{ c.id }}</td>
+        <td>{{ c.medium }}</td>
+        <td class="num">{% if c.payable_if_resolved is not none %}${{ "{:,.0f}".format(c.payable_if_resolved) }}{% elif c.payable is not none %}${{ "{:,.0f}".format(c.payable) }}{% else %}&mdash;{% endif %}</td>
+        <td><span class="pill {{ c.tone }}">{{ c.decision_label }}</span></td>
+        <td><a class="btn btn-outline btn-sm" href="/claims/{{ c.id }}">Open</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">Queue is empty. Nothing needs a person right now.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

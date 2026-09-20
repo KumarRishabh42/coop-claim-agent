@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Not found · Co-op claim agent{% endblock %}
+{% block content %}
+<div class="card empty-state">
+  <p>No claim called "{{ claim_id }}".</p>
+  <a class="btn btn-primary" href="/">Back home</a>
+</div>
+{% endblock %}

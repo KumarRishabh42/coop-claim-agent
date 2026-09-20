@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Co-op claim agent{% endblock %}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <span class="nav-brand">Co-op claim agent</span>
+    <a class="navlink {% if active == 'home' %}active{% endif %}" href="/">Home</a>
+    <a class="navlink {% if active == 'queue' %}active{% endif %}" href="/queue">Queue</a>
+    <a class="navlink {% if active == 'program' %}active{% endif %}" href="/program">Program</a>
+    <a class="navlink {% if active == 'funds' %}active{% endif %}" href="/funds">Funds</a>
+    <a class="navlink {% if active == 'audit' %}active{% endif %}" href="/audit">Audit</a>
+    <span class="nav-spacer"></span>
+    <span class="nav-cost">replay mode &middot; model cost <strong>${{ "%.4f"|format(nav_cost) }}</strong></span>
+  </nav>
+  <div class="page">
+    {% block content %}{% endblock %}
+  </div>
+</body>
+</html>

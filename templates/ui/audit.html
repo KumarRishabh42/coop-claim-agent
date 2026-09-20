@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Audit · Co-op claim agent{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div class="header-row">
+    <h1 style="margin:0;">Audit log</h1>
+    <div class="big-stat">
+      <div class="value">${{ "%.4f"|format(total_cost) }}</div>
+      <div class="label">Total model cost</div>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  {% if events %}
+  <table>
+    <thead><tr><th>Time</th><th>Claim</th><th>Step</th><th>Actor</th><th>Note</th><th class="num">Tokens</th><th class="num">Cost</th></tr></thead>
+    <tbody>
+      {% for e in events %}
+      <tr>
+        <td class="muted">{{ e.ts }}</td>
+        <td>{% if e.claim_id %}<a href="/claims/{{ e.claim_id }}">{{ e.claim_id }}</a>{% else %}&mdash;{% endif %}</td>
+        <td><span class="pill neutral">{{ e.step }}</span></td>
+        <td>{{ e.actor }}</td>
+        <td class="muted">{{ e.note or "" }}</td>
+        <td class="num">{% if e.tokens_in or e.tokens_out %}{{ e.tokens_in }} in / {{ e.tokens_out }} out{% endif %}</td>
+        <td class="num">{% if e.cost_usd %}${{ "%.4f"|format(e.cost_usd) }}{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">No events yet.</div>
+  {% endif %}
+</div>
+
+{% endblock %}

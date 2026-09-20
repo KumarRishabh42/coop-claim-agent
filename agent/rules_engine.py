@@ -11,6 +11,11 @@ from agent.models import AdFacts, CheckResult, ObservedFacts, PacketManifest, Ru
 # already ran). Everything else, when it fails in claim mode, is not_eligible.
 FIXABLE_CHECK_TYPES = {"required_documents"}
 
+# Pre-check mode only has the ad/script (SPEC.md 8.2) — no invoice, payment or
+# claim form yet, so document/date/amount rules don't apply and would just
+# read as false failures.
+PRECHECK_CHECK_TYPES = {"eligible_media", "logo_size", "required_text", "no_competing_brands", "restricted_offer"}
+
 COMPETITOR_BRANDS = {"heatwave", "aircore", "thermorite", "glacierline"}
 
 
@@ -213,6 +218,8 @@ _HANDLERS = {
 def evaluate_all(
     rules: list[Rule], facts: ObservedFacts, manifest: PacketManifest, documents_present: dict[str, bool],
 ) -> list[CheckResult]:
+    if manifest.mode == "precheck":
+        rules = [r for r in rules if r.check.type in PRECHECK_CHECK_TYPES]
     results = []
     for rule in rules:
         result = evaluate_rule(rule, facts, manifest, documents_present)

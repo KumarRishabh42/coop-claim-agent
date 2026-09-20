@@ -7,7 +7,7 @@
 <div class="page-head">
   <div>
     <h1>Packet {{ claim.id }}{% if claim.mode == "precheck" %}, pre-check before the ad runs{% endif %}</h1>
-    <div class="muted" style="margin-top:6px">{{ medium_label }}{% if manifest.physical_size_in %} &middot; {{ manifest.physical_size_in.width }} x {{ manifest.physical_size_in.height }} in{% endif %} &middot; Northwind Comfort 2026</div>
+    <div class="muted" style="margin-top:6px">{{ medium_label }}{% if manifest.physical_size_in %} &middot; {{ manifest.physical_size_in.width }} x {{ manifest.physical_size_in.height }} in{% endif %} &middot; {{ program_label }}</div>
   </div>
   <span class="chip {{ claim.tone }} big">{{ claim.decision_label }}{% if claim.decision == "fix_needed" %}: 1 rule fails{% elif claim.decision == "needs_approval" and reimb %}: over the $500 limit{% endif %}</span>
 </div>
@@ -27,12 +27,12 @@
         <img src="/packets/{{ claim.packet_id }}/{{ ad_file }}" alt="Ad creative">
         {% if ad_box and ad_box.brand %}
         <div class="bbox {{ 'fail' if r3_fail else '' }}" style="left:{{ ad_box.brand.left }}%; top:{{ ad_box.brand.top }}%; width:{{ ad_box.brand.width }}%; height:{{ ad_box.brand.height }}%;">
-          <span class="bbox-label {{ 'fail' if r3_fail else '' }}">Brand logo{% if brand_in %}, {{ "%.1f"|format(brand_in) }} in{% endif %}</span>
+          <span class="bbox-label {{ 'fail' if r3_fail else '' }}">{{ "✗" if r3_fail else "✓" }} Brand logo{% if brand_in %}, {{ "%.1f"|format(brand_in) }} in{% endif %}</span>
         </div>
         {% endif %}
         {% if ad_box and ad_box.dealer %}
         <div class="bbox" style="left:{{ ad_box.dealer.left }}%; top:{{ ad_box.dealer.top }}%; width:{{ ad_box.dealer.width }}%; height:{{ ad_box.dealer.height }}%;">
-          <span class="bbox-label dealer">Dealer logo{% if dealer_in %}, {{ "%.1f"|format(dealer_in) }} in{% endif %}</span>
+          <span class="bbox-label dealer">✓ Dealer logo{% if dealer_in %}, {{ "%.1f"|format(dealer_in) }} in{% endif %}</span>
         </div>
         {% endif %}
       </div>

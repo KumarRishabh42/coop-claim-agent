@@ -10,7 +10,7 @@ model:
   # section 10. Chosen over Sonnet for this PoC's demo cost — swap the name
   # (and prices below) for a stronger model if extraction quality needs it.
   name: claude-haiku-4-5-20251001
-  max_tokens: 4096
+  max_tokens: 8192
   # USD per token, from claude.com/pricing as of 2026-09-19: $1/MTok in,
   # $5/MTok out for Claude Haiku 4.5. Update alongside the model name if it
   # changes — never hardcode a price from memory.

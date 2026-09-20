@@ -77,7 +77,11 @@ class ExtractedRule(BaseModel):
     title: str
     kind: str
     applies_to: list[str] = []
-    check: RuleCheck
+    # Optional, not RuleCheck: a real guide has rules outside the 9 shapes
+    # this prototype can decide (dealer tiers, spend caps, MDF vs co-op...).
+    # The model is told to omit those; this also tolerates it sending null
+    # instead, rather than crashing the whole extraction over one section.
+    check: Optional[RuleCheck] = None
     source: RuleSource
     on_fail: Optional[str] = None
 
@@ -102,6 +106,8 @@ def extract_rules(program_id: str, guide_text: str, mode: Optional[str] = None) 
 
     rules = []
     for r in extracted.rules:
+        if r.check is None:
+            continue  # doesn't fit any check type this prototype can decide
         verified = _normalize(r.source.quote) in normalized_guide
         rules.append(
             Rule(

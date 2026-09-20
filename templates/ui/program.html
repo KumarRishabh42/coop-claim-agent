@@ -7,7 +7,10 @@
     <h1>{{ program["name"] if program else "Program" }} {{ program["year"] if program else "" }}</h1>
     <div class="muted" style="margin-top:6px">{{ rules | length }} rules extracted. {{ verified_count }} of {{ rules | length }} quotes found word for word in the guide. Cost ${{ "%.2f"|format(rules_cost) }}.</div>
   </div>
-  <a class="btn" href="/program/upload">Load another guide</a>
+  <div class="btn-row">
+    {% if original_url %}<a class="btn" href="{{ original_url }}" target="_blank" rel="noopener">View original PDF</a>{% endif %}
+    <a class="btn" href="/program/upload">Load another guide</a>
+  </div>
 </div>
 
 <div class="grid-2" style="grid-template-columns: 1fr 1fr;">

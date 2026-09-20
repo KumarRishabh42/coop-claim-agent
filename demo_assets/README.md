@@ -1,31 +1,30 @@
 # Demo asset packet
 
-One of each file the `/claims/upload` form asks for, so you can try it
-immediately without hunting for real documents. This is packet A from the
-seeded demo (SPEC.md section 7.3) — a clean claim where every rule passes.
+Ready-to-upload files for `/claims/upload` and `/program/upload`, so you can
+try the app immediately without hunting for real documents.
 
-| File | Upload into |
-|---|---|
-| `ad.png` | Ad (image or PDF) |
-| `invoice.png` | Invoice |
-| `payment.png` | Proof of payment |
-| `claim_form.png` | Claim form |
-| `affidavit.png` | Station affidavit (only needed if medium = radio) |
+| File | Upload into | What it shows |
+|---|---|---|
+| `ad-pass.png` | Ad | Every rule passes — clean logo sizes, tagline present |
+| `ad-fail.png` | Ad | Brand logo too small (0.7 in, needs ~1.2 in) — fails on section 3 |
+| `invoice.png` | Invoice | $760, dated 2026-09-14 |
+| `payment.png` | Proof of payment | $760, matches the invoice |
+| `claim_form.png` | Claim form | $760, matches |
+| `affidavit.png` | Station affidavit | Only needed if medium = radio |
+| `northwind-2026-guide.md` | `/program/upload` | The synthetic co-op guide these packets are checked against |
 
-## Try it
+## Try it — the fast way
 
 1. Go to `/claims/upload`.
-2. Mode: **Full claim**. Medium: **Direct mail**. Submitted on: any 2026 date
-   within 60 days of the invoice (invoice date is 2026-09-14, so e.g. `2026-10-01`).
-   Ad width/height: `6` x `4`.
-   Skip the affidavit — that's only for radio claims.
-3. Upload the four files above (`ad.png`, `invoice.png`, `payment.png`,
-   `claim_form.png`) and submit.
+2. Upload **only** `ad-pass.png` as the Ad. Leave everything else blank —
+   invoice/payment/claim form default to a matching $760 sample automatically.
+3. Submit. Expect: **filed automatically**, $380 payable, every rule passing.
 
-Expected result: **filed automatically**, payable **$380** (cost $760 at a
-50% rate), every rule passing — checked live against whichever guide is
-currently active (upload your own at `/program/upload` first if you want to
-see it checked against real guidelines instead of the seeded Northwind one).
+Swap in `ad-fail.png` instead (same steps, mode = **Pre-check**) to see a
+rule fail with a specific, cited fix.
 
-To see a rule fail instead, try `ad.png` alone in **pre-check** mode after
-first uploading a guide with a logo-size rule the ad doesn't meet.
+## Try it against a real guide
+
+Upload `northwind-2026-guide.md` at `/program/upload` first (or your own real
+PDF), then repeat the steps above — the packet is checked live against
+whichever guide is currently active.

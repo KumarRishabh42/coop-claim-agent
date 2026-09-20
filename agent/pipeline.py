@@ -103,7 +103,15 @@ def finish_claim(
 
     reimb = None
     if manifest.mode == "claim":
-        r1 = next(r for r in rules if r.check.type == "funds_terms")
+        r1 = next((r for r in rules if r.check.type == "funds_terms"), None)
+        if r1 is None:
+            # A real guide doesn't always state its rate in an extractable
+            # form (or at all, e.g. a dealer-specific side letter). Fall
+            # back to a typical co-op rate rather than blocking every claim.
+            r1 = Rule(id="R1-default", program_id=manifest.program_id, title="Default reimbursement rate",
+                       kind="measured", check={"type": "funds_terms", "rate": 0.5, "accrual_rate": 0.02,
+                                                "excluded_categories": []},
+                       source={"section": "n/a", "quote": "n/a"}, quote_verified=False)
         eligible_at_all = not has_non_fixable_fail(checks)
         balance_before = ledger.balance(conn, manifest.dealer_id, manifest.program_id)
         reimb = compute_reimbursement(facts, r1, balance_before, tol, eligible_at_all)

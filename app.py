@@ -25,6 +25,7 @@ app = FastAPI(title="Co-op claims")
 templates = Jinja2Templates(directory=str(repo_path("templates", "ui")))
 app.mount("/static", StaticFiles(directory=str(repo_path("templates", "static"))), name="static")
 app.mount("/packets", StaticFiles(directory=str(repo_path("data", "packets"))), name="packets")
+app.mount("/guides", StaticFiles(directory=str(repo_path("data", "guides"))), name="guides")
 
 # UI-SPEC.md 4.1
 DECISION_LABELS = {
@@ -188,7 +189,9 @@ def run_all(conn: sqlite3.Connection = Depends(db)):
 def claim_upload_form(request: Request, conn: sqlite3.Connection = Depends(db)):
     program_id = _program_id(conn)
     program = conn.execute("SELECT * FROM programs WHERE id=?", (program_id,)).fetchone()
-    return render(request, "claim_upload.html", {"program": program}, conn, "claims")
+    import datetime
+    today = datetime.date.today().isoformat()
+    return render(request, "claim_upload.html", {"program": program, "today": today}, conn, "claims")
 
 
 @app.post("/claims/upload")
@@ -230,6 +233,20 @@ async def claim_upload(
         await save(payment_file, "payment")
         await save(claim_form_file, "claim_form")
         await save(affidavit_file, "affidavit")
+        # DECISION: if the dealer only has an ad handy, fall back to the
+        # demo's sample invoice/payment/claim form ($760, matching) instead
+        # of blocking on missing documents — lets "just drop in an ad" still
+        # produce a full claim result.
+        demo_assets = repo_path("demo_assets")
+        for key in ("invoice", "payment", "claim_form"):
+            if key not in files and (demo_assets / f"{key}.png").exists():
+                import shutil
+                shutil.copy(demo_assets / f"{key}.png", packet_dir / f"{key}.png")
+                files[key] = f"{key}.png"
+        if medium == "radio" and "affidavit" not in files and (demo_assets / "affidavit.png").exists():
+            import shutil
+            shutil.copy(demo_assets / "affidavit.png", packet_dir / "affidavit.png")
+            files["affidavit"] = "affidavit.png"
 
     physical_size = None
     if width_in and height_in:
@@ -264,6 +281,8 @@ def claim_detail(claim_id: str, request: Request, conn: sqlite3.Connection = Dep
     manifest = json.loads(row["manifest_json"])
     facts = json.loads(row["facts_json"]) if row["facts_json"] else {}
     reimb = json.loads(row["reimbursement_json"]) if row["reimbursement_json"] else None
+    claim_program = conn.execute("SELECT name, year FROM programs WHERE id=?", (row["program_id"],)).fetchone()
+    program_label = f"{claim_program['name']} {claim_program['year']}" if claim_program else row["program_id"]
 
     ad_box = None
     ad = facts.get("ad")
@@ -314,6 +333,7 @@ def claim_detail(claim_id: str, request: Request, conn: sqlite3.Connection = Dep
         "manifest": manifest, "facts": facts, "reimb": reimb, "ad_box": ad_box,
         "ad_file": manifest["files"].get("ad"), "script_file": manifest["files"].get("script"),
         "missing_docs": missing_docs, "medium_label": MEDIUM_LABELS.get(row["medium"], row["medium"]),
+        "program_label": program_label,
         "brand_in": brand_in, "dealer_in": dealer_in, "r3_fail": r3_fail, "steps": steps,
         "cost_this_claim": sum(e.cost_usd for e in events),
     }, conn, "home")
@@ -372,15 +392,21 @@ def program_page(request: Request, conn: sqlite3.Connection = Depends(db)):
     rules = [dict(r, check=json.loads(r["check_json"]), applies_to=json.loads(r["applies_to_json"])) for r in rule_rows]
     verified_count = sum(1 for r in rules if r["quote_verified"])
     guide_path = Path(program["guide_path"]) if program else repo_path(get_config()["paths"]["guides_dir"], "northwind-2026.md")
-    guide_text = guide_path.read_text(errors="replace")
+    # A PDF's raw bytes aren't displayable text — read the plain-text copy
+    # saved alongside it (see program_upload), and offer the original PDF
+    # itself as a separate "view original" link/tab.
+    is_pdf = guide_path.suffix.lower() == ".pdf"
+    text_path = guide_path.with_suffix(".text.txt") if is_pdf else guide_path
+    guide_text = text_path.read_text(errors="replace") if text_path.exists() else guide_path.read_text(errors="replace")
     marked_guide_html = _highlight_quotes(guide_text, rules)
     rules_cost = 0.0
     ev = conn.execute("SELECT cost_usd FROM audit_events WHERE step='extract_rules' ORDER BY id DESC LIMIT 1").fetchone()
     if ev:
         rules_cost = ev["cost_usd"]
+    original_url = f"/guides/{guide_path.relative_to(repo_path('data', 'guides'))}" if is_pdf else None
     return render(request, "program.html", {
         "program": program, "rules": rules, "marked_guide_html": marked_guide_html,
-        "verified_count": verified_count, "rules_cost": rules_cost,
+        "verified_count": verified_count, "rules_cost": rules_cost, "original_url": original_url,
     }, conn, "program")
 
 

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Upload a claim · Co-op claims{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <h1>Upload a dealer packet</h1>
+    <div class="muted" style="margin-top:6px">Checked live against {{ program["name"] if program else "the active program" }}.</div>
+  </div>
+</div>
+
+<section class="card" style="max-width:640px;">
+  <form method="post" action="/claims/upload" enctype="multipart/form-data" class="stack">
+
+    <div class="grid-3">
+      <label class="stack" style="gap:6px;">
+        <span class="small" style="font-weight:600">Mode</span>
+        <select name="mode" style="height:44px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
+          <option value="claim">Full claim</option>
+          <option value="precheck">Pre-check (ad only)</option>
+        </select>
+      </label>
+      <label class="stack" style="gap:6px;">
+        <span class="small" style="font-weight:600">Medium</span>
+        <select name="medium" style="height:44px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
+          <option value="direct_mail">Direct mail</option>
+          <option value="newspaper">Newspaper</option>
+          <option value="paid_social">Paid social</option>
+          <option value="paid_search">Paid search</option>
+          <option value="radio">Radio</option>
+        </select>
+      </label>
+      <label class="stack" style="gap:6px;">
+        <span class="small" style="font-weight:600">Submitted on</span>
+        <input name="submitted_on" type="date" required style="height:44px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
+      </label>
+    </div>
+
+    <div class="grid-3">
+      <label class="stack" style="gap:6px;">
+        <span class="small" style="font-weight:600">Ad width, in</span>
+        <input name="width_in" type="number" step="0.1" placeholder="6" style="height:44px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
+      </label>
+      <label class="stack" style="gap:6px;">
+        <span class="small" style="font-weight:600">Ad height, in</span>
+        <input name="height_in" type="number" step="0.1" placeholder="4" style="height:44px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
+      </label>
+      <div></div>
+    </div>
+
+    <label class="stack" style="gap:6px;">
+      <span class="small" style="font-weight:600">Ad (image or PDF)</span>
+      <input name="ad_file" type="file" accept="image/*,.pdf" required style="padding:8px 0;">
+    </label>
+
+    <div id="claim-docs" class="grid-2" style="grid-template-columns: 1fr 1fr;">
+      <label class="stack" style="gap:6px;">
+        <span class="small" style="font-weight:600">Invoice</span>
+        <input name="invoice_file" type="file" accept="image/*,.pdf" style="padding:8px 0;">
+      </label>
+      <label class="stack" style="gap:6px;">
+        <span class="small" style="font-weight:600">Proof of payment</span>
+        <input name="payment_file" type="file" accept="image/*,.pdf" style="padding:8px 0;">
+      </label>
+      <label class="stack" style="gap:6px;">
+        <span class="small" style="font-weight:600">Claim form</span>
+        <input name="claim_form_file" type="file" accept="image/*,.pdf" style="padding:8px 0;">
+      </label>
+      <label class="stack" style="gap:6px;">
+        <span class="small" style="font-weight:600">Station affidavit (radio only)</span>
+        <input name="affidavit_file" type="file" accept="image/*,.pdf" style="padding:8px 0;">
+      </label>
+    </div>
+
+    <button class="btn primary large" type="submit">Check this packet</button>
+    <p class="muted small" style="margin:0;">This makes real model calls (a few cents) and creates a new claim you can act on like any other.</p>
+  </form>
+</section>
+
+{% endblock %}

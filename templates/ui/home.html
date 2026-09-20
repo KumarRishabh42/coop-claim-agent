@@ -7,7 +7,10 @@
     <h1>{{ dealer["name"] if dealer else "Dealer" }}</h1>
     {% if program %}<div class="muted" style="margin-top:6px">{{ program["name"] }} {{ program["year"] }} program. Reimbursed at {{ (rate*100)|round|int }}%. Claim by {{ claim_by }}.</div>{% endif %}
   </div>
-  <form method="post" action="/run_all"><button class="btn primary large" type="submit">Run all packets</button></form>
+  <div class="btn-row">
+    <a class="btn quiet large" href="/claims/upload">Upload a dealer packet</a>
+    <form method="post" action="/run_all"><button class="btn primary large" type="submit">Run all packets</button></form>
+  </div>
 </div>
 
 <div class="grid-4">

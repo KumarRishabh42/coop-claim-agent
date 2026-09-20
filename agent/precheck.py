@@ -40,7 +40,7 @@ Return ONLY the JSON object. No markdown code fences, no prose before or after."
 
 
 def precheck_ad(packet_id: str, image_bytes: Optional[bytes] = None, script_text: Optional[str] = None,
-                 brand_name: str = "Northwind Comfort") -> tuple[AdFacts, Usage]:
+                 brand_name: str = "Northwind Comfort", mode: Optional[str] = None) -> tuple[AdFacts, Usage]:
     prompt = PRECHECK_PROMPT.format(brand_name=brand_name)
     facts, usage = call(
         task="precheck_ad",
@@ -48,5 +48,6 @@ def precheck_ad(packet_id: str, image_bytes: Optional[bytes] = None, script_text
         schema=AdFacts,
         text=prompt if image_bytes else (prompt + "\n\n---SCRIPT---\n" + (script_text or "")),
         images=[image_bytes] if image_bytes else None,
+        mode=mode,
     )
     return facts, usage

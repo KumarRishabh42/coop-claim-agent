@@ -90,12 +90,13 @@ def _normalize(s: str) -> str:
     return re.sub(r"\s+", " ", s).strip()
 
 
-def extract_rules(program_id: str, guide_text: str) -> tuple[list[Rule], Usage]:
+def extract_rules(program_id: str, guide_text: str, mode: Optional[str] = None) -> tuple[list[Rule], Usage]:
     extracted, usage = call(
         task="extract_rules",
         key=program_id,
         schema=ExtractedRules,
         text=EXTRACT_PROMPT.format(guide_text=guide_text),
+        mode=mode,
     )
     normalized_guide = _normalize(guide_text)
 

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Load a guide · Co-op claims{% endblock %}
+{% block content %}
+
+<div class="page-head">
+  <div>
+    <h1>Load a co-op program guide</h1>
+    <div class="muted" style="margin-top:6px">Upload a PDF or text guide. The agent extracts rules with citations, live, right now.</div>
+  </div>
+</div>
+
+<section class="card" style="max-width:560px;">
+  <form method="post" action="/program/upload" enctype="multipart/form-data" class="stack">
+    <label class="stack" style="gap:6px;">
+      <span class="small" style="font-weight:600">Brand / program name</span>
+      <input name="brand_name" type="text" placeholder="e.g. Northwind Comfort" style="height:44px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
+    </label>
+    <label class="stack" style="gap:6px;">
+      <span class="small" style="font-weight:600">Guide file (PDF or .txt/.md)</span>
+      <input name="guide_file" type="file" accept=".pdf,.txt,.md" required style="padding:8px 0;">
+    </label>
+    <button class="btn primary large" type="submit">Extract rules</button>
+    <p class="muted small" style="margin:0;">This makes a real model call (a few cents) and becomes the active program for new claims.</p>
+  </form>
+</section>
+
+{% endblock %}

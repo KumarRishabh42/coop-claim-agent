@@ -43,7 +43,8 @@ def documents_present_map(manifest: PacketManifest, packet_dir: Path) -> dict[st
     return present
 
 
-def run_packet(conn: sqlite3.Connection, manifest: PacketManifest, packet_dir: Path, threshold: float | None = None) -> ClaimDecision:
+def run_packet(conn: sqlite3.Connection, manifest: PacketManifest, packet_dir: Path, threshold: float | None = None,
+                mode: str | None = None, brand_name: str = "Northwind Comfort") -> ClaimDecision:
     cfg = get_config()
     threshold = threshold if threshold is not None else cfg["policy"]["auto_file_threshold_usd"]
     tol = cfg["policy"]["amounts_match_tolerance_usd"]
@@ -57,14 +58,14 @@ def run_packet(conn: sqlite3.Connection, manifest: PacketManifest, packet_dir: P
     cost_usd = 0.0
     if manifest.files.ad:
         image_bytes = (packet_dir / manifest.files.ad).read_bytes()
-        ad_facts, usage1 = precheck_ad(manifest.packet_id, image_bytes=image_bytes)
+        ad_facts, usage1 = precheck_ad(manifest.packet_id, image_bytes=image_bytes, brand_name=brand_name, mode=mode)
         cost_usd += usage1.cost_usd
         audit.log(conn, "precheck", "agent", claim_id=claim_id, input_ref=f"packets/{manifest.packet_id}/{manifest.files.ad}",
                    model=usage1.model, tokens_in=usage1.tokens_in, tokens_out=usage1.tokens_out, cost_usd=usage1.cost_usd,
                    note="ad facts extracted")
     elif manifest.files.script:
         script_text = (packet_dir / manifest.files.script).read_text()
-        ad_facts, usage1 = precheck_ad(manifest.packet_id, script_text=script_text)
+        ad_facts, usage1 = precheck_ad(manifest.packet_id, script_text=script_text, brand_name=brand_name, mode=mode)
         cost_usd += usage1.cost_usd
         audit.log(conn, "precheck", "agent", claim_id=claim_id, input_ref=f"packets/{manifest.packet_id}/{manifest.files.script}",
                    model=usage1.model, tokens_in=usage1.tokens_in, tokens_out=usage1.tokens_out, cost_usd=usage1.cost_usd,
@@ -75,7 +76,7 @@ def run_packet(conn: sqlite3.Connection, manifest: PacketManifest, packet_dir: P
         files = manifest.files.model_dump()
         present_names = [k for k in ("invoice", "payment", "claim_form", "affidavit") if documents_present.get(k)]
         images = [(packet_dir / files[k]).read_bytes() for k in present_names]
-        doc_facts, usage2 = extract_documents(manifest.packet_id, images)
+        doc_facts, usage2 = extract_documents(manifest.packet_id, images, mode=mode)
         cost_usd += usage2.cost_usd
         audit.log(conn, "documents", "agent", claim_id=claim_id, input_ref=f"packets/{manifest.packet_id}/",
                    model=usage2.model, tokens_in=usage2.tokens_in, tokens_out=usage2.tokens_out, cost_usd=usage2.cost_usd,

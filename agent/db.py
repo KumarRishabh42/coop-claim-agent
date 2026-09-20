@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS programs (
 );
 
 CREATE TABLE IF NOT EXISTS rules (
-    id TEXT PRIMARY KEY,
+    id TEXT NOT NULL,
     program_id TEXT NOT NULL,
     title TEXT NOT NULL,
     kind TEXT NOT NULL,
@@ -28,7 +28,8 @@ CREATE TABLE IF NOT EXISTS rules (
     source_section TEXT NOT NULL,
     source_quote TEXT NOT NULL,
     on_fail TEXT,
-    quote_verified INTEGER NOT NULL DEFAULT 1
+    quote_verified INTEGER NOT NULL DEFAULT 1,
+    PRIMARY KEY (id, program_id)
 );
 
 CREATE TABLE IF NOT EXISTS dealers (
@@ -98,6 +99,11 @@ CREATE TABLE IF NOT EXISTS ledger_entries (
     note TEXT
 );
 
+CREATE TABLE IF NOT EXISTS app_state (
+    key TEXT PRIMARY KEY,
+    value TEXT
+);
+
 CREATE TABLE IF NOT EXISTS audit_events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ts TEXT NOT NULL,
@@ -124,7 +130,11 @@ def db_path() -> Path:
 
 
 def get_conn(path: Path | None = None) -> sqlite3.Connection:
-    conn = sqlite3.connect(path or db_path())
+    # check_same_thread=False: FastAPI's async routes (needed for UploadFile)
+    # run on the event loop thread while a sync Depends() dependency's
+    # connection is created via a threadpool — one request, one connection,
+    # never touched concurrently, so this is safe.
+    conn = sqlite3.connect(path or db_path(), check_same_thread=False)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA foreign_keys = ON")
     return conn

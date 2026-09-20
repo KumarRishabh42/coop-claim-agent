@@ -46,8 +46,9 @@ def call(
     text: Optional[str] = None,
     images: Optional[list[bytes]] = None,
     system: Optional[str] = None,
+    mode: Optional[str] = None,
 ) -> tuple[BaseModel, Usage]:
-    mode = os.environ.get("LLM_MODE", "replay")
+    mode = mode or os.environ.get("LLM_MODE", "replay")
     cfg = get_config()["model"]
 
     if mode == "replay":

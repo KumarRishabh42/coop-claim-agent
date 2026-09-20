@@ -5,16 +5,21 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+import time
+import uuid
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, Form, Request
+from fastapi import Depends, FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from agent import audit, ledger, pipeline
 from agent.config import get_config, repo_path
-from agent.db import get_conn, init_db
+from agent.db import dumps, get_conn, init_db
+from agent.extract_rules import extract_rules
+from agent.models import PacketFiles, PacketManifest, PhysicalSize
+from agent.pdf import ensure_image_bytes, ensure_text
 
 app = FastAPI(title="Co-op claims")
 templates = Jinja2Templates(directory=str(repo_path("templates", "ui")))
@@ -68,12 +73,23 @@ def _cfg():
     return get_config()
 
 
-def _program_id() -> str:
+def _dealer_id() -> str:
+    return _cfg()["program"]["dealer_id"]
+
+
+def _program_id(conn: sqlite3.Connection) -> str:
+    """The active program: the one most recently uploaded, or the seeded
+    default if nothing has been uploaded yet."""
+    row = conn.execute("SELECT value FROM app_state WHERE key='active_program_id'").fetchone()
+    if row:
+        return row["value"]
     return _cfg()["program"]["id"]
 
 
-def _dealer_id() -> str:
-    return _cfg()["program"]["dealer_id"]
+def _set_active_program(conn: sqlite3.Connection, program_id: str) -> None:
+    conn.execute("INSERT INTO app_state (key, value) VALUES ('active_program_id', ?) "
+                 "ON CONFLICT(key) DO UPDATE SET value=excluded.value", (program_id,))
+    conn.commit()
 
 
 def _why(conn: sqlite3.Connection, claim_id: str, decision: str) -> str:
@@ -127,7 +143,7 @@ def _needs_you_rows(conn: sqlite3.Connection) -> list[dict]:
 
 @app.get("/")
 def home(request: Request, conn: sqlite3.Connection = Depends(db)):
-    program_id, dealer_id = _program_id(), _dealer_id()
+    program_id, dealer_id = _program_id(conn), _dealer_id()
     dealer = conn.execute("SELECT * FROM dealers WHERE id=?", (dealer_id,)).fetchone()
     program = conn.execute("SELECT * FROM programs WHERE id=?", (program_id,)).fetchone()
     claim_rows = conn.execute("SELECT * FROM claims ORDER BY id").fetchall()
@@ -166,6 +182,72 @@ def run_all(conn: sqlite3.Connection = Depends(db)):
     from agent.seed import run_all_packets
     run_all_packets(conn)
     return RedirectResponse("/", status_code=303)
+
+
+@app.get("/claims/upload")
+def claim_upload_form(request: Request, conn: sqlite3.Connection = Depends(db)):
+    program_id = _program_id(conn)
+    program = conn.execute("SELECT * FROM programs WHERE id=?", (program_id,)).fetchone()
+    return render(request, "claim_upload.html", {"program": program}, conn, "claims")
+
+
+@app.post("/claims/upload")
+async def claim_upload(
+    request: Request,
+    mode: str = Form(...),
+    medium: str = Form(...),
+    submitted_on: str = Form(...),
+    width_in: str = Form(""),
+    height_in: str = Form(""),
+    ad_file: UploadFile = File(...),
+    invoice_file: UploadFile | None = File(None),
+    payment_file: UploadFile | None = File(None),
+    claim_form_file: UploadFile | None = File(None),
+    affidavit_file: UploadFile | None = File(None),
+    conn: sqlite3.Connection = Depends(db),
+):
+    program_id = _program_id(conn)
+    program = conn.execute("SELECT * FROM programs WHERE id=?", (program_id,)).fetchone()
+    dealer_id = _dealer_id()
+
+    packet_id = f"U{int(time.time() * 1000) % 100000}"
+    packet_dir = repo_path(get_config()["paths"]["packets_dir"], packet_id)
+    packet_dir.mkdir(parents=True, exist_ok=True)
+
+    files = {}
+    async def save(upload: UploadFile | None, key: str):
+        if upload is None or not upload.filename:
+            return
+        content = await upload.read()
+        png = ensure_image_bytes(upload.filename, content)
+        fname = f"{key}.png"
+        (packet_dir / fname).write_bytes(png)
+        files[key] = fname
+
+    await save(ad_file, "ad")
+    if mode == "claim":
+        await save(invoice_file, "invoice")
+        await save(payment_file, "payment")
+        await save(claim_form_file, "claim_form")
+        await save(affidavit_file, "affidavit")
+
+    physical_size = None
+    if width_in and height_in:
+        try:
+            physical_size = PhysicalSize(width=float(width_in), height=float(height_in))
+        except ValueError:
+            physical_size = None
+
+    manifest = PacketManifest(
+        packet_id=packet_id, mode=mode, dealer_id=dealer_id, program_id=program_id, medium=medium,
+        physical_size_in=physical_size, submitted_on=submitted_on, files=PacketFiles(**files),
+    )
+    (packet_dir / "manifest.json").write_text(dumps(manifest))
+
+    brand_name = program["name"] if program else "the manufacturer"
+    pipeline.run_packet(conn, manifest, packet_dir, mode="live", brand_name=brand_name)
+    return RedirectResponse(f"/claims/{packet_id}", status_code=303)
+
 
 
 @app.get("/claims/{claim_id}")
@@ -284,12 +366,13 @@ def _highlight_quotes(guide_text: str, rules: list[dict]) -> str:
 
 @app.get("/program")
 def program_page(request: Request, conn: sqlite3.Connection = Depends(db)):
-    program_id = _program_id()
+    program_id = _program_id(conn)
     program = conn.execute("SELECT * FROM programs WHERE id=?", (program_id,)).fetchone()
     rule_rows = conn.execute("SELECT * FROM rules WHERE program_id=? ORDER BY id", (program_id,)).fetchall()
     rules = [dict(r, check=json.loads(r["check_json"]), applies_to=json.loads(r["applies_to_json"])) for r in rule_rows]
     verified_count = sum(1 for r in rules if r["quote_verified"])
-    guide_text = repo_path(get_config()["paths"]["guides_dir"], "northwind-2026.md").read_text()
+    guide_path = Path(program["guide_path"]) if program else repo_path(get_config()["paths"]["guides_dir"], "northwind-2026.md")
+    guide_text = guide_path.read_text(errors="replace")
     marked_guide_html = _highlight_quotes(guide_text, rules)
     rules_cost = 0.0
     ev = conn.execute("SELECT cost_usd FROM audit_events WHERE step='extract_rules' ORDER BY id DESC LIMIT 1").fetchone()
@@ -303,7 +386,7 @@ def program_page(request: Request, conn: sqlite3.Connection = Depends(db)):
 
 @app.get("/funds")
 def funds_page(request: Request, conn: sqlite3.Connection = Depends(db)):
-    program_id, dealer_id = _program_id(), _dealer_id()
+    program_id, dealer_id = _program_id(conn), _dealer_id()
     program = conn.execute("SELECT * FROM programs WHERE id=?", (program_id,)).fetchone()
     raw_entries = ledger.entries(conn, dealer_id, program_id)
     metrics = {
@@ -330,3 +413,69 @@ def audit_page(request: Request, conn: sqlite3.Connection = Depends(db)):
     return render(request, "audit.html", {
         "events": list(reversed(events)), "total_cost": total, "n_calls": n_calls, "n_claims": n_claims,
     }, conn, "audit")
+
+
+# ---------------------------------------------------------------------------
+# Uploads: a real guide (policy) and a real dealer packet, processed live.
+# ---------------------------------------------------------------------------
+
+def _slug(s: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "-", s.lower()).strip("-")[:40] or "guide"
+
+
+@app.get("/program/upload")
+def program_upload_form(request: Request, conn: sqlite3.Connection = Depends(db)):
+    return render(request, "program_upload.html", {}, conn, "program")
+
+
+@app.post("/program/upload")
+async def program_upload(request: Request, guide_file: UploadFile = File(...), brand_name: str = Form(""),
+                          conn: sqlite3.Connection = Depends(db)):
+    content = await guide_file.read()
+    guide_text = ensure_text(guide_file.filename, content)
+
+    program_id = f"{_slug(brand_name or guide_file.filename)}-{int(time.time())}"
+    guides_dir = repo_path(get_config()["paths"]["guides_dir"], "uploaded")
+    guides_dir.mkdir(parents=True, exist_ok=True)
+    ext = "pdf" if guide_file.filename.lower().endswith(".pdf") else "txt"
+    guide_path = guides_dir / f"{program_id}.{ext}"
+    guide_path.write_bytes(content)
+    # Also keep a plain-text copy so the program page can always display it.
+    (guides_dir / f"{program_id}.text.txt").write_text(guide_text)
+
+    rules, usage = extract_rules(program_id, guide_text, mode="live")
+    audit.log(conn, "extract_rules", "agent", input_ref=str(guide_path), model=usage.model,
+              tokens_in=usage.tokens_in, tokens_out=usage.tokens_out, cost_usd=usage.cost_usd,
+              note=f"{len(rules)} rules extracted from an uploaded guide")
+
+    r1 = next((r for r in rules if r.check.type == "funds_terms"), None)
+    rate = r1.check.rate if r1 and hasattr(r1.check, "rate") else 0.5
+    accrual_rate = r1.check.accrual_rate if r1 and hasattr(r1.check, "accrual_rate") else 0.02
+    program_name = brand_name or guide_file.filename.rsplit(".", 1)[0]
+
+    conn.execute(
+        "INSERT INTO programs (id, name, year, guide_path, rate, accrual_rate) VALUES (?,?,?,?,?,?)",
+        (program_id, program_name, 2026, str(guide_path), rate, accrual_rate),
+    )
+    for r in rules:
+        conn.execute(
+            "INSERT INTO rules (id, program_id, title, kind, applies_to_json, check_json, source_section, "
+            "source_quote, on_fail, quote_verified) VALUES (?,?,?,?,?,?,?,?,?,?)",
+            (r.id, r.program_id, r.title, r.kind, dumps(r.applies_to), dumps(r.check), r.source.section,
+             r.source.quote, r.on_fail, int(r.quote_verified)),
+        )
+    conn.commit()
+
+    dealer_id = _dealer_id()
+    if not conn.execute("SELECT 1 FROM dealers WHERE id=?", (dealer_id,)).fetchone():
+        conn.execute("INSERT INTO dealers (id, name) VALUES (?, ?)", (dealer_id, "Summit Heating and Air"))
+        conn.commit()
+    # DECISION: a demo opening balance, since we have no real purchase
+    # history for a freshly uploaded program. Generous enough that a few
+    # sample claims don't hit the balance cap.
+    ledger.add_entry(conn, dealer_id, program_id, "accrual", 50000.0,
+                      note="Demo opening balance for an uploaded program")
+
+    _set_active_program(conn, program_id)
+    return RedirectResponse("/program", status_code=303)
+

@@ -8,6 +8,8 @@ venv/
 coop.db
 data/packets/*/*.png
 data/packets/*/*.pdf
+data/packets/U*/
+data/guides/uploaded/
 node_modules/
 .DS_Store
 *.egg-info/

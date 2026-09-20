@@ -51,12 +51,13 @@ class DocumentFacts(BaseModel):
     affidavit: Optional[AffidavitFacts] = None
 
 
-def extract_documents(packet_id: str, images: list[bytes]) -> tuple[DocumentFacts, Usage]:
+def extract_documents(packet_id: str, images: list[bytes], mode: Optional[str] = None) -> tuple[DocumentFacts, Usage]:
     facts, usage = call(
         task="extract_documents",
         key=packet_id,
         schema=DocumentFacts,
         text=DOCS_PROMPT,
         images=images,
+        mode=mode,
     )
     return facts, usage

@@ -50,13 +50,20 @@ def seed_program_and_rules(conn: sqlite3.Connection) -> None:
     ledger.add_entry(conn, dealer_id, program_id, "reimbursed", -4150.0, note="Opening reimbursed-to-date balance")
 
 
+# The six packets rendered by scripts/make_packets.py, per SPEC.md 7.3.
+# Fixed rather than scanning data/packets/, which also holds packets created
+# live through the /claims/upload demo flow (see app.py) — those have no
+# replay fixture and aren't part of this canned run.
+CANONICAL_PACKET_IDS = ["A", "B", "C", "D", "E", "F"]
+
+
 def run_all_packets(conn: sqlite3.Connection) -> dict:
     packets_dir = repo_path(get_config()["paths"]["packets_dir"])
     decisions = {}
-    for packet_dir in sorted(packets_dir.iterdir()):
-        manifest_path = packet_dir / "manifest.json"
+    for packet_id in CANONICAL_PACKET_IDS:
+        manifest_path = packets_dir / packet_id / "manifest.json"
         if not manifest_path.exists():
             continue
         manifest = PacketManifest.model_validate(json.loads(manifest_path.read_text()))
-        decisions[manifest.packet_id] = pipeline.run_packet(conn, manifest, packet_dir)
+        decisions[manifest.packet_id] = pipeline.run_packet(conn, manifest, packets_dir / packet_id)
     return decisions

@@ -1,0 +1,29 @@
+{
+  "result": {
+    "invoice": {
+      "vendor": "Meta Ads",
+      "number": "FB-99213",
+      "date": "2026-10-02",
+      "total": 900.0,
+      "line_items": [
+        {
+          "desc": "Ad spend",
+          "amount": 900.0
+        }
+      ]
+    },
+    "payment": null,
+    "claim_form": {
+      "medium": "paid_social",
+      "total_cost": 900.0,
+      "requested": 450.0
+    },
+    "affidavit": null
+  },
+  "usage": {
+    "model": "claude-sonnet-5",
+    "tokens_in": 900,
+    "tokens_out": 340,
+    "cost_usd": 0.0052
+  }
+}

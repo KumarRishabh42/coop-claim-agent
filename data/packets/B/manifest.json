@@ -1,0 +1,15 @@
+{
+  "packet_id": "B",
+  "mode": "precheck",
+  "dealer_id": "summit",
+  "program_id": "northwind-2026",
+  "medium": "newspaper",
+  "physical_size_in": {
+    "width": 5,
+    "height": 4
+  },
+  "submitted_on": "2026-10-01",
+  "files": {
+    "ad": "ad.png"
+  }
+}

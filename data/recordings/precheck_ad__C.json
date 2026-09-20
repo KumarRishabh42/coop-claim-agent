@@ -1,0 +1,20 @@
+{
+  "result": {
+    "image_size_px": null,
+    "brand_logo_bbox_px": null,
+    "dealer_logo_bbox_px": null,
+    "text_found": [
+      "\"Comfort you can count on\" \u2014 Summit Heating and Air is a proud Northwind Comfort dealer. Call today for your fall furnace tune-up."
+    ],
+    "brands_mentioned": [
+      "Northwind Comfort"
+    ],
+    "offer_phrases": []
+  },
+  "usage": {
+    "model": "claude-sonnet-5",
+    "tokens_in": 1400,
+    "tokens_out": 260,
+    "cost_usd": 0.0054
+  }
+}

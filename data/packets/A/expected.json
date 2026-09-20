@@ -1,0 +1,11 @@
+{
+  "decision": "auto_file",
+  "payable": 380.0,
+  "verdicts": {
+    "R3": "pass",
+    "R4": "pass",
+    "R7": "pass",
+    "R8": "pass",
+    "R9": "pass"
+  }
+}

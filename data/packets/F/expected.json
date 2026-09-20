@@ -1,0 +1,9 @@
+{
+  "decision": "hold_question",
+  "payable_if_resolved": 300.0,
+  "verdicts": {
+    "R5": "unsure"
+  },
+  "after_resolve_decision": "auto_file",
+  "after_resolve_payable": 300.0
+}

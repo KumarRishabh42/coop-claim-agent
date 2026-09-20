@@ -1,0 +1,34 @@
+{
+  "result": {
+    "image_size_px": [
+      800,
+      800
+    ],
+    "brand_logo_bbox_px": [
+      480,
+      40,
+      760,
+      92
+    ],
+    "dealer_logo_bbox_px": [
+      40,
+      36,
+      440,
+      120
+    ],
+    "text_found": [
+      "Book your fall tune-up",
+      "Comfort you can count on"
+    ],
+    "brands_mentioned": [
+      "Northwind Comfort"
+    ],
+    "offer_phrases": []
+  },
+  "usage": {
+    "model": "claude-sonnet-5",
+    "tokens_in": 1400,
+    "tokens_out": 260,
+    "cost_usd": 0.0054
+  }
+}

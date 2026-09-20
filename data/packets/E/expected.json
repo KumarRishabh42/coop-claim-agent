@@ -1,0 +1,10 @@
+{
+  "decision": "hold_question",
+  "payable_if_resolved": 825.0,
+  "verdicts": {
+    "R9": "unsure"
+  },
+  "after_resolve_amount_source": "invoice",
+  "after_resolve_decision": "needs_approval",
+  "after_resolve_payable": 825.0
+}

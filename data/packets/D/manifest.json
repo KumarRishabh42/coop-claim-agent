@@ -1,0 +1,17 @@
+{
+  "packet_id": "D",
+  "mode": "claim",
+  "dealer_id": "summit",
+  "program_id": "northwind-2026",
+  "medium": "paid_social",
+  "physical_size_in": {
+    "width": 4,
+    "height": 4
+  },
+  "submitted_on": "2026-10-15",
+  "files": {
+    "ad": "ad.png",
+    "invoice": "invoice.png",
+    "claim_form": "claim_form.png"
+  }
+}

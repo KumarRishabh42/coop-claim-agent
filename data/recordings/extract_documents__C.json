@@ -1,0 +1,39 @@
+{
+  "result": {
+    "invoice": {
+      "vendor": "WNCR-FM",
+      "number": "R-4402",
+      "date": "2026-08-03",
+      "total": 4800.0,
+      "line_items": [
+        {
+          "desc": "Airtime",
+          "amount": 4800.0
+        }
+      ]
+    },
+    "payment": {
+      "date": "2026-08-05",
+      "amount": 4800.0,
+      "method": "ach"
+    },
+    "claim_form": {
+      "medium": "radio",
+      "total_cost": 4800.0,
+      "requested": 2400.0
+    },
+    "affidavit": {
+      "station": "WNCR-FM",
+      "air_dates": [
+        "2026-08-10",
+        "2026-08-17"
+      ]
+    }
+  },
+  "usage": {
+    "model": "claude-sonnet-5",
+    "tokens_in": 900,
+    "tokens_out": 340,
+    "cost_usd": 0.0052
+  }
+}

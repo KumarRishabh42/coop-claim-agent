@@ -1,0 +1,37 @@
+{
+  "result": {
+    "invoice": {
+      "vendor": "PrintPost Mailers",
+      "number": "7711",
+      "date": "2026-09-14",
+      "total": 760.0,
+      "line_items": [
+        {
+          "desc": "Printing",
+          "amount": 460.0
+        },
+        {
+          "desc": "Postage",
+          "amount": 300.0
+        }
+      ]
+    },
+    "payment": {
+      "date": "2026-09-16",
+      "amount": 760.0,
+      "method": "card"
+    },
+    "claim_form": {
+      "medium": "direct_mail",
+      "total_cost": 760.0,
+      "requested": 380.0
+    },
+    "affidavit": null
+  },
+  "usage": {
+    "model": "claude-sonnet-5",
+    "tokens_in": 900,
+    "tokens_out": 340,
+    "cost_usd": 0.0052
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "decision": "blocked_missing_doc",
+  "payable_if_resolved": 450.0,
+  "verdicts": {
+    "R8": "fail"
+  }
+}

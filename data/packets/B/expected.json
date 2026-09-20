@@ -1,0 +1,8 @@
+{
+  "decision": "fix_needed",
+  "payable": null,
+  "verdicts": {
+    "R3": "fail"
+  },
+  "fix_contains": "1.2 in"
+}

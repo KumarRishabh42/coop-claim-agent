@@ -209,7 +209,7 @@ def make_packet(spec: dict) -> None:
 PACKETS = [
     dict(
         packet_id="A", mode="claim", medium="direct_mail", width_in=6, height_in=4,
-        dealer_logo_in=2.4, brand_logo_in=1.3,
+        dealer_logo_in=2.4, brand_logo_in=1.6,
         headline="Fall furnace tune-up, $89", tagline="Comfort you can count on",
         submitted_on="2026-10-01",
         vendor="PrintPost Mailers", invoice_number="7711", invoice_date="2026-09-14", invoice_total=760.00,
@@ -238,7 +238,7 @@ PACKETS = [
     ),
     dict(
         packet_id="D", mode="claim", medium="paid_social", width_in=4, height_in=4,
-        dealer_logo_in=2.0, brand_logo_in=1.2,
+        dealer_logo_in=2.0, brand_logo_in=1.4,
         headline="Book your fall tune-up", tagline="Comfort you can count on",
         submitted_on="2026-10-15",
         vendor="Meta Ads", invoice_number="FB-99213", invoice_date="2026-10-02", invoice_total=900.00,
@@ -249,7 +249,7 @@ PACKETS = [
     ),
     dict(
         packet_id="E", mode="claim", medium="direct_mail", width_in=6, height_in=4,
-        dealer_logo_in=2.4, brand_logo_in=1.3,
+        dealer_logo_in=2.4, brand_logo_in=1.6,
         headline="Fall furnace tune-up, $89", tagline="Comfort you can count on",
         submitted_on="2026-10-05",
         vendor="PrintPost Mailers", invoice_number="7733", invoice_date="2026-09-20", invoice_total=1650.00,
@@ -261,7 +261,7 @@ PACKETS = [
     ),
     dict(
         packet_id="F", mode="claim", medium="direct_mail", width_in=6, height_in=4,
-        dealer_logo_in=2.4, brand_logo_in=1.3,
+        dealer_logo_in=2.4, brand_logo_in=1.6,
         headline="New furnace installs", offer_line="Free smart thermostat with any new Northwind furnace",
         tagline="Comfort you can count on",
         submitted_on="2026-10-20",
@@ -270,7 +270,7 @@ PACKETS = [
         payment_date="2026-10-08", payment_amount=600.00, payment_method="card",
         claim_form_total=600.00,
         expected={"decision": "hold_question", "payable_if_resolved": 300.0, "verdicts": {"R5": "unsure"},
-                  "after_resolve_confirm_offer_approved_decision": "needs_approval_or_auto_file", "after_resolve_payable": 300.0},
+                  "after_resolve_decision": "auto_file", "after_resolve_payable": 300.0},
     ),
 ]
 

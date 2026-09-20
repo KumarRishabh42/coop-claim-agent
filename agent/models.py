@@ -174,6 +174,10 @@ Decision = Literal[
     "blocked_missing_doc",
     "fix_needed",
     "not_eligible",
+    # DECISION: not one of SPEC.md 6.5's six claim decisions — precheck mode
+    # (ad only, nothing to file) needs its own "all clear" outcome distinct
+    # from fix_needed.
+    "ready_to_run",
 ]
 
 

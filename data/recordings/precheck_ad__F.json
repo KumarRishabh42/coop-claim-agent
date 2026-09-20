@@ -1,0 +1,37 @@
+{
+  "result": {
+    "image_size_px": [
+      1200,
+      800
+    ],
+    "brand_logo_bbox_px": [
+      840,
+      40,
+      1160,
+      92
+    ],
+    "dealer_logo_bbox_px": [
+      40,
+      36,
+      520,
+      120
+    ],
+    "text_found": [
+      "New furnace installs",
+      "Free smart thermostat with any new Northwind furnace",
+      "Comfort you can count on"
+    ],
+    "brands_mentioned": [
+      "Northwind Comfort"
+    ],
+    "offer_phrases": [
+      "Free smart thermostat with any new Northwind furnace"
+    ]
+  },
+  "usage": {
+    "model": "claude-sonnet-5",
+    "tokens_in": 1400,
+    "tokens_out": 260,
+    "cost_usd": 0.0054
+  }
+}

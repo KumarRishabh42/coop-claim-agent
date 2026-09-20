@@ -110,6 +110,13 @@ def seed_bmw_program(conn: sqlite3.Connection) -> None:
     manifest = PacketManifest.model_validate(json.loads((packets_dir / "G" / "manifest.json").read_text()))
     pipeline.run_packet(conn, manifest, packets_dir / "G", brand_name="BMW Motorrad")
 
+    # Default to BMW as the active program: new /claims/upload and
+    # /program/upload demos check against whatever's active, and BMW is the
+    # one worth showing off (real guide, hardcoded deterministic result).
+    conn.execute("INSERT INTO app_state (key, value) VALUES ('active_program_id', ?) "
+                 "ON CONFLICT(key) DO UPDATE SET value=excluded.value", (BMW_PROGRAM_ID,))
+    conn.commit()
+
 
 # The six packets rendered by scripts/make_packets.py, per SPEC.md 7.3.
 # Fixed rather than scanning data/packets/, which also holds packets created

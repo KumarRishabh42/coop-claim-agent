@@ -3,10 +3,11 @@ that's simpler than a join. See SPEC.md section 6.7."""
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 from pathlib import Path
 
-from agent.config import get_config, repo_path
+from agent.config import get_config, repo_path, writable_path
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS programs (
@@ -122,11 +123,11 @@ CREATE TABLE IF NOT EXISTS audit_events (
 
 
 def db_path() -> Path:
-    url = get_config()["paths"]["database_url"]
+    url = os.environ.get("DATABASE_URL") or get_config()["paths"]["database_url"]
     # DECISION: only sqlite:/// URLs are supported, per SPEC.md section 10.
     assert url.startswith("sqlite:///"), f"unsupported DATABASE_URL: {url}"
     rel = url.removeprefix("sqlite:///")
-    return repo_path(rel)
+    return writable_path(rel)
 
 
 def get_conn(path: Path | None = None) -> sqlite3.Connection:

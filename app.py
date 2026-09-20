@@ -9,14 +9,14 @@ import time
 import uuid
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, File, Form, Request, UploadFile
-from fastapi.responses import RedirectResponse
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from agent import audit, ledger, pipeline
-from agent.config import get_config, repo_path
-from agent.db import dumps, get_conn, init_db
+from agent.config import IS_SERVERLESS, get_config, repo_path, writable_path
+from agent.db import db_path, dumps, get_conn, init_db, reset_db
 from agent.extract_rules import extract_rules
 from agent.models import PacketFiles, PacketManifest, PhysicalSize
 from agent.pdf import ensure_image_bytes, ensure_text
@@ -24,8 +24,36 @@ from agent.pdf import ensure_image_bytes, ensure_text
 app = FastAPI(title="Co-op claims")
 templates = Jinja2Templates(directory=str(repo_path("templates", "ui")))
 app.mount("/static", StaticFiles(directory=str(repo_path("templates", "static"))), name="static")
-app.mount("/packets", StaticFiles(directory=str(repo_path("data", "packets"))), name="packets")
-app.mount("/guides", StaticFiles(directory=str(repo_path("data", "guides"))), name="guides")
+
+
+# Serves both the bundled demo packets/guides (repo_path, read-only) and
+# anything uploaded at runtime (writable_path — /tmp on a serverless host).
+# A plain StaticFiles mount can only point at one directory; this checks both.
+def _serve_from(*roots: Path):
+    def handler(path: str):
+        for root in roots:
+            candidate = (root / path).resolve()
+            if candidate.exists() and root.resolve() in candidate.parents:
+                return FileResponse(candidate)
+        raise HTTPException(404)
+    return handler
+
+
+app.get("/packets/{path:path}")(_serve_from(writable_path("data", "packets"), repo_path("data", "packets")))
+app.get("/guides/{path:path}")(_serve_from(writable_path("data", "guides"), repo_path("data", "guides")))
+
+
+@app.on_event("startup")
+def _self_seed_on_cold_start():
+    """Serverless hosts have no build-time `make data` step, and /tmp starts
+    empty on every cold start — seed the canonical demo straight from the
+    bundled replay fixtures (no network) so the app isn't blank/broken."""
+    if IS_SERVERLESS and not db_path().exists():
+        from agent.seed import run_all_packets, seed_program_and_rules
+        conn = reset_db()
+        seed_program_and_rules(conn)
+        run_all_packets(conn)
+        conn.close()
 
 # UI-SPEC.md 4.1
 DECISION_LABELS = {
@@ -214,7 +242,7 @@ async def claim_upload(
     dealer_id = _dealer_id()
 
     packet_id = f"U{int(time.time() * 1000) % 100000}"
-    packet_dir = repo_path(get_config()["paths"]["packets_dir"], packet_id)
+    packet_dir = writable_path("data", "packets", packet_id)
     packet_dir.mkdir(parents=True, exist_ok=True)
 
     files = {}
@@ -403,7 +431,14 @@ def program_page(request: Request, conn: sqlite3.Connection = Depends(db)):
     ev = conn.execute("SELECT cost_usd FROM audit_events WHERE step='extract_rules' ORDER BY id DESC LIMIT 1").fetchone()
     if ev:
         rules_cost = ev["cost_usd"]
-    original_url = f"/guides/{guide_path.relative_to(repo_path('data', 'guides'))}" if is_pdf else None
+    original_url = None
+    if is_pdf:
+        for base in (writable_path("data", "guides"), repo_path("data", "guides")):
+            try:
+                original_url = f"/guides/{guide_path.relative_to(base)}"
+                break
+            except ValueError:
+                continue
     return render(request, "program.html", {
         "program": program, "rules": rules, "marked_guide_html": marked_guide_html,
         "verified_count": verified_count, "rules_cost": rules_cost, "original_url": original_url,
@@ -461,7 +496,7 @@ async def program_upload(request: Request, guide_file: UploadFile = File(...), b
     guide_text = ensure_text(guide_file.filename, content)
 
     program_id = f"{_slug(brand_name or guide_file.filename)}-{int(time.time())}"
-    guides_dir = repo_path(get_config()["paths"]["guides_dir"], "uploaded")
+    guides_dir = writable_path("data", "guides", "uploaded")
     guides_dir.mkdir(parents=True, exist_ok=True)
     ext = "pdf" if guide_file.filename.lower().endswith(".pdf") else "txt"
     guide_path = guides_dir / f"{program_id}.{ext}"

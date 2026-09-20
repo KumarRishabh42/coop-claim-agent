@@ -9,7 +9,7 @@ import sqlite3
 from pathlib import Path
 
 from agent import audit, ledger
-from agent.config import get_config, repo_path
+from agent.config import get_config, packet_dir_for, repo_path
 from agent.db import dumps
 from agent.documents import extract_documents
 from agent.models import ClaimDecision, ObservedFacts, PacketManifest, PaymentFacts, Rule
@@ -193,7 +193,7 @@ def _load_claim_context(conn: sqlite3.Connection, claim_id: str):
     manifest = PacketManifest.model_validate(json.loads(row["manifest_json"]))
     facts = ObservedFacts.model_validate(json.loads(row["facts_json"]))
     documents_present = json.loads(row["documents_present_json"]) if row["documents_present_json"] else {}
-    packet_dir = repo_path(get_config()["paths"]["packets_dir"], manifest.packet_id)
+    packet_dir = packet_dir_for(manifest.packet_id)
     rules = load_rules(conn, manifest.program_id)
     return manifest, facts, documents_present, packet_dir, rules
 

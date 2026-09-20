@@ -1,38 +1,35 @@
 {% extends "base.html" %}
-{% block title %}Audit · Co-op claim agent{% endblock %}
+{% block title %}Audit trail · Co-op claims{% endblock %}
 {% block content %}
 
-<div class="card">
-  <div class="header-row">
-    <h1 style="margin:0;">Audit log</h1>
-    <div class="big-stat">
-      <div class="value">${{ "%.4f"|format(total_cost) }}</div>
-      <div class="label">Total model cost</div>
-    </div>
+<div class="page-head">
+  <div>
+    <h1>Audit trail</h1>
+    <div class="muted" style="margin-top:6px">Every model call, decision, human action and filing.</div>
   </div>
 </div>
 
-<div class="card">
+<section class="card">
   {% if events %}
-  <table>
-    <thead><tr><th>Time</th><th>Claim</th><th>Step</th><th>Actor</th><th>Note</th><th class="num">Tokens</th><th class="num">Cost</th></tr></thead>
-    <tbody>
-      {% for e in events %}
-      <tr>
-        <td class="muted">{{ e.ts }}</td>
-        <td>{% if e.claim_id %}<a href="/claims/{{ e.claim_id }}">{{ e.claim_id }}</a>{% else %}&mdash;{% endif %}</td>
-        <td><span class="pill neutral">{{ e.step }}</span></td>
-        <td>{{ e.actor }}</td>
-        <td class="muted">{{ e.note or "" }}</td>
-        <td class="num">{% if e.tokens_in or e.tokens_out %}{{ e.tokens_in }} in / {{ e.tokens_out }} out{% endif %}</td>
-        <td class="num">{% if e.cost_usd %}${{ "%.4f"|format(e.cost_usd) }}{% endif %}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="stack" style="gap:0">
+    <div class="row head cols-audit-claim"><div>Time</div><div>Actor</div><div>What happened</div><div>Claim</div><div class="num">Cost</div></div>
+    {% for e in events %}
+    <div class="row cols-audit-claim">
+      <div class="muted">{{ e.ts[11:16] }}</div>
+      <div>{{ e.actor }}</div>
+      <div class="muted">{{ e.note or e.step }}</div>
+      <div>{% if e.claim_id %}<a href="/claims/{{ e.claim_id }}">{{ e.claim_id }}</a>{% else %}&mdash;{% endif %}</div>
+      <div class="num">{% if e.cost_usd %}${{ "%.2f"|format(e.cost_usd) }}{% else %}$0.00{% endif %}</div>
+    </div>
+    {% endfor %}
+  </div>
   {% else %}
   <div class="empty-state">No events yet.</div>
   {% endif %}
-</div>
+  <div class="row cols-audit-claim" style="border-top:1px solid var(--line); margin-top:6px; padding-top:12px; font-weight:600;">
+    <div style="grid-column: 1 / 4;">Total model cost ${{ "%.2f"|format(total_cost) }}. {{ n_calls }} model calls. {{ n_claims }} claims.</div>
+    <div></div><div></div>
+  </div>
+</section>
 
 {% endblock %}

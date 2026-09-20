@@ -1,193 +1,225 @@
 {% extends "base.html" %}
-{% block title %}Claim {{ claim.id }} · Co-op claim agent{% endblock %}
+{% block title %}Claim {{ claim.id }} · Co-op claims{% endblock %}
 {% block content %}
 
-<p><a href="/">&larr; Home</a></p>
+<a href="/">&larr; Back to all claims</a>
 
-<div class="card">
-  <div class="header-row">
-    <h1>Claim {{ claim.id }} <span class="muted" style="font-weight:400; font-size:16px;">&middot; {{ medium_label }}{% if claim.mode == "precheck" %} &middot; pre-check{% endif %}</span></h1>
-    <span class="pill {{ claim.tone }}" style="font-size:14px; padding:5px 14px;">{{ claim.decision_label }}</span>
+<div class="page-head">
+  <div>
+    <h1>Packet {{ claim.id }}{% if claim.mode == "precheck" %}, pre-check before the ad runs{% endif %}</h1>
+    <div class="muted" style="margin-top:6px">{{ medium_label }}{% if manifest.physical_size_in %} &middot; {{ manifest.physical_size_in.width }} x {{ manifest.physical_size_in.height }} in{% endif %} &middot; Northwind Comfort 2026</div>
   </div>
-  {% if claim.status == "rejected" %}<p class="muted" style="margin:10px 0 0">Rejected by a reviewer.</p>{% endif %}
+  <span class="chip {{ claim.tone }} big">{{ claim.decision_label }}{% if claim.decision == "fix_needed" %}: 1 rule fails{% elif claim.decision == "needs_approval" and reimb %}: over the $500 limit{% endif %}</span>
 </div>
 
-<div class="claim-grid">
-  <div>
+{% if steps %}
+<ul class="steps" aria-label="Progress">
+  {% for s in steps %}<li class="{{ s.state }}">{{ s.label }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+<div class="grid-2">
+  <div class="stack">
+
     {% if ad_file %}
-    <div class="card">
-      <h2>Ad</h2>
-      <div class="ad-preview">
+    <section class="card" style="padding:0; overflow:hidden;">
+      <div class="ad-frame">
         <img src="/packets/{{ claim.packet_id }}/{{ ad_file }}" alt="Ad creative">
         {% if ad_box and ad_box.brand %}
-        <div class="logo-box brand" style="left:{{ ad_box.brand.left }}%; top:{{ ad_box.brand.top }}%; width:{{ ad_box.brand.width }}%; height:{{ ad_box.brand.height }}%;">
-          <span class="tag">Brand logo</span>
+        <div class="bbox {{ 'fail' if r3_fail else '' }}" style="left:{{ ad_box.brand.left }}%; top:{{ ad_box.brand.top }}%; width:{{ ad_box.brand.width }}%; height:{{ ad_box.brand.height }}%;">
+          <span class="bbox-label {{ 'fail' if r3_fail else '' }}">Brand logo{% if brand_in %}, {{ "%.1f"|format(brand_in) }} in{% endif %}</span>
         </div>
         {% endif %}
         {% if ad_box and ad_box.dealer %}
-        <div class="logo-box dealer" style="left:{{ ad_box.dealer.left }}%; top:{{ ad_box.dealer.top }}%; width:{{ ad_box.dealer.width }}%; height:{{ ad_box.dealer.height }}%;">
-          <span class="tag">Dealer logo</span>
+        <div class="bbox" style="left:{{ ad_box.dealer.left }}%; top:{{ ad_box.dealer.top }}%; width:{{ ad_box.dealer.width }}%; height:{{ ad_box.dealer.height }}%;">
+          <span class="bbox-label dealer">Dealer logo{% if dealer_in %}, {{ "%.1f"|format(dealer_in) }} in{% endif %}</span>
         </div>
         {% endif %}
       </div>
-    </div>
+      <p class="muted small" style="margin:0; padding:12px 16px;">The model returns the two logo boxes. Code converts pixels to inches from the ad's stated size and applies the rule. Measured values within 10% of a limit come back as unsure, not as a verdict.</p>
+    </section>
     {% elif script_file %}
-    <div class="card">
-      <h2>Script</h2>
-      <p style="font-size:15px;">{{ facts.ad.text_found[0] if facts.ad and facts.ad.text_found else "" }}</p>
-    </div>
+    <section class="card">
+      <h2 style="margin-bottom:10px">Script</h2>
+      {% set text = (facts.ad.text_found[0] if facts.ad and facts.ad.text_found else "") %}
+      {% set marked = text | replace("Comfort you can count on", "<mark>Comfort you can count on</mark>") %}
+      <p style="font-size:15px; margin:0;">{{ marked | safe }}</p>
+    </section>
     {% endif %}
 
-    <div class="card">
-      <h2>Documents</h2>
-      <div class="doc-grid">
-        {% for d in documents %}
-          {% if d.kind not in ("ad", "script") %}
-            {% if d.present %}
-            <div class="doc-thumb">
-              <a href="/packets/{{ claim.packet_id }}/{{ d.path }}" target="_blank"><img src="/packets/{{ claim.packet_id }}/{{ d.path }}" alt="{{ d.kind }}"></a>
-            </div>
-            <div class="muted" style="font-size:12px; margin-top:-6px;">{{ d.kind.replace("_", " ") }}</div>
-            {% else %}
-            <div class="doc-missing">Missing<br>{{ d.kind.replace("_", " ") }}</div>
-            {% endif %}
-          {% endif %}
+    <section class="card">
+      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+        <h2>Audit trail</h2>
+        <span class="small">Cost of this claim ${{ "%.2f"|format(cost_this_claim) }}</span>
+      </div>
+      <div class="stack" style="gap:0; margin-top:6px;">
+        {% for e in events %}
+        <div class="row cols-audit">
+          <div class="muted">{{ e.ts[11:16] }}</div>
+          <div>{{ e.actor }}</div>
+          <div class="muted">{{ e.note or e.step }}</div>
+          <div class="num">{% if e.cost_usd %}${{ "%.2f"|format(e.cost_usd) }}{% else %}$0.00{% endif %}</div>
+        </div>
         {% endfor %}
       </div>
-    </div>
+    </section>
   </div>
 
-  <div>
-    <div class="card">
-      <h2>Checks</h2>
-      {% for c in checks %}
-        {% if c.verdict != "not_applicable" %}
-        <div class="check {{ c.verdict }}">
-          <div class="check-head">
-            <span class="check-rule">{{ c.rule_id }} &middot; section {{ c.source_section }}</span>
-            <span class="pill {{ 'good' if c.verdict == 'pass' else ('bad' if c.verdict == 'fail' else 'warn') }}">{{ c.verdict }}</span>
-          </div>
-          <div class="check-message">{{ c.message }}</div>
-          {% if c.fix %}<div class="check-fix">{{ c.fix }}</div>{% endif %}
-        </div>
-        {% endif %}
-      {% endfor %}
-    </div>
+  <div class="stack">
 
-    {% if reimb %}
-    <div class="card">
-      <h2>Reimbursement</h2>
-      <div class="breakdown-line"><span>Submitted</span><span class="num">${{ "{:,.2f}".format(reimb.submitted) }}</span></div>
-      {% for ex in reimb.excluded %}
-      <div class="breakdown-line"><span class="muted">Excluded &middot; {{ ex.desc }}</span><span class="num">&minus;${{ "{:,.2f}".format(ex.amount) }}</span></div>
-      {% endfor %}
-      <div class="breakdown-line"><span>Eligible cost</span><span class="num">${{ "{:,.2f}".format(reimb.eligible) }}</span></div>
-      <div class="breakdown-line"><span>Rate</span><span class="num">{{ (reimb.rate * 100) | round | int }}%</span></div>
-      <div class="breakdown-line"><span>Computed</span><span class="num">${{ "{:,.2f}".format(reimb.computed) }}</span></div>
-      <div class="breakdown-line"><span class="muted">Balance before</span><span class="num muted">${{ "{:,.2f}".format(reimb.balance_before) }}</span></div>
-      <div class="breakdown-line total"><span>Payable</span><span class="num">${{ "{:,.2f}".format(reimb.payable) }}</span></div>
-      {% if not reimb.amounts_resolved %}<p class="muted" style="font-size:13px; margin:8px 0 0;">Amounts don't fully agree yet &mdash; shown assuming the invoice total is correct.</p>{% endif %}
-    </div>
-    {% endif %}
-
-    {% if claim.decision == "needs_approval" %}
-    <div class="answer-box">
-      <p><strong>Over the ${{ "%.0f"|format(500) }} auto-file threshold.</strong> A person needs to approve this before it's filed.</p>
-      <div class="actions">
-        <form class="inline" method="post" action="/claims/{{ claim.id }}/approve">
-          <button class="btn btn-good" type="submit">Approve &amp; file for ${{ "{:,.2f}".format(reimb.payable) }}</button>
-        </form>
-        <form class="inline" method="post" action="/claims/{{ claim.id }}/reject">
-          <button class="btn btn-danger-outline" type="submit">Reject</button>
-        </form>
+    {% for q in questions %}
+    <section class="card {{ 'fail' if false else '' }} stack" style="gap:8px; border-color: var(--ask-line);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="chip {{ 'pass' if q.resolved else 'ask' }}">{{ "Answered" if q.resolved else "Question" }}</span>
+        <h2>{{ q.rule_id }}. {{ "Resolved" if q.resolved else "Open question" }}</h2>
       </div>
-    </div>
-    {% endif %}
+      <div>{{ q.text }}</div>
 
-    {% if claim.decision == "hold_question" %}
-      {% for q in questions %}
-      <div class="answer-box">
-        <p><strong>{{ q.rule_id }}:</strong> {{ q.text }}</p>
+      {% if not q.resolved %}
         {% if q.rule_id == "R9" %}
-        <div class="actions">
+        <div class="stack" style="gap:4px; margin: 4px 0;">
+          {% if facts.claim_form and facts.claim_form.total_cost %}<div class="row cols-money"><span>claim_form, total cost</span><span class="num" style="color:var(--fail-fg)">${{ "{:,.2f}".format(facts.claim_form.total_cost) }}</span></div>{% endif %}
+          {% if facts.invoice and facts.invoice.total %}<div class="row cols-money"><span>invoice, {{ facts.invoice.vendor }}</span><span class="num">${{ "{:,.2f}".format(facts.invoice.total) }}</span></div>{% endif %}
+          {% if facts.payment and facts.payment.amount %}<div class="row cols-money"><span>payment, {{ facts.payment.method }}</span><span class="num">${{ "{:,.2f}".format(facts.payment.amount) }}</span></div>{% endif %}
+        </div>
+        <div class="quote"><strong>Guide, section 9:</strong> "The claim form, invoice and proof of payment must agree."</div>
+        <div class="btn-row">
           {% if facts.invoice and facts.invoice.total %}
-          <form class="inline" method="post" action="/claims/{{ claim.id }}/answer">
+          <form method="post" action="/claims/{{ claim.id }}/answer">
             <input type="hidden" name="action" value="resolve_amount"><input type="hidden" name="source" value="invoice">
-            <button class="btn btn-primary btn-sm" type="submit">The invoice (${{ "{:,.2f}".format(facts.invoice.total) }}) is correct</button>
+            <button class="btn primary" type="submit">Use the invoice amount, ${{ "{:,.0f}".format(facts.invoice.total) }}</button>
           </form>
           {% endif %}
           {% if facts.claim_form and facts.claim_form.total_cost %}
-          <form class="inline" method="post" action="/claims/{{ claim.id }}/answer">
+          <form method="post" action="/claims/{{ claim.id }}/answer">
             <input type="hidden" name="action" value="resolve_amount"><input type="hidden" name="source" value="claim_form">
-            <button class="btn btn-outline btn-sm" type="submit">The claim form (${{ "{:,.2f}".format(facts.claim_form.total_cost) }}) is correct</button>
+            <button class="btn quiet" type="submit">The claim form is right, ${{ "{:,.0f}".format(facts.claim_form.total_cost) }}</button>
           </form>
           {% endif %}
         </div>
         {% elif q.rule_id == "R5" %}
-        <div class="actions">
-          <form class="inline" method="post" action="/claims/{{ claim.id }}/answer">
+        <div class="quote"><strong>Guide, section 5:</strong> "Ads offering \"free\" equipment require written approval from your territory manager before they run."</div>
+        <div class="btn-row">
+          <form method="post" action="/claims/{{ claim.id }}/answer">
             <input type="hidden" name="action" value="confirm_offer_approved">
-            <button class="btn btn-primary btn-sm" type="submit">Territory manager approval is on file &mdash; attach it</button>
+            <button class="btn primary" type="submit">Upload the approval</button>
+          </form>
+          <form method="post" action="/claims/{{ claim.id }}/reject">
+            <button class="btn quiet" type="submit">I don't have one</button>
           </form>
         </div>
         {% endif %}
-      </div>
-      {% endfor %}
-      <div class="card" style="padding:12px 16px;">
-        <form method="post" action="/claims/{{ claim.id }}/reject">
-          <button class="btn btn-danger-outline btn-sm" type="submit">Reject this claim</button>
-        </form>
-      </div>
-    {% endif %}
+      {% else %}
+        <div class="muted small">Answered.</div>
+      {% endif %}
+    </section>
+    {% endfor %}
 
     {% if claim.decision == "blocked_missing_doc" %}
-    <div class="answer-box">
-      <p><strong>Missing document(s):</strong> {{ missing_docs | join(", ") }}</p>
-      <div class="actions">
+    <section class="card stack" style="gap:8px; border-color: var(--ask-line);">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span class="chip ask">Question</span>
+        <h2>R8. Missing document</h2>
+      </div>
+      <div>{{ missing_docs | join(", ") }} missing. Section 8 requires it before filing.</div>
+      <div class="btn-row">
         {% for d in missing_docs %}
-        <form class="inline" method="post" action="/claims/{{ claim.id }}/answer">
+        <form method="post" action="/claims/{{ claim.id }}/answer">
           <input type="hidden" name="action" value="upload_document"><input type="hidden" name="doc_kind" value="{{ d }}">
-          <button class="btn btn-primary btn-sm" type="submit">Upload {{ d.replace("_", " ") }}</button>
+          <button class="btn primary" type="submit">Upload {{ d.replace("_", " ") }}</button>
         </form>
         {% endfor %}
       </div>
-    </div>
+    </section>
     {% endif %}
 
-    {% if claim.decision == "not_eligible" %}
-    <div class="card" style="border-left: 4px solid var(--bad);">
-      <p style="margin:0;">This claim can't be fixed after the fact &mdash; the issue is with when or how the ad already ran. It will not be filed.</p>
-    </div>
+    {% set question_rule_ids = questions | map(attribute="rule_id") | list %}
+    {% for c in checks %}
+      {% if c.verdict in ("fail", "unsure") and c.rule_id not in question_rule_ids and not (c.rule_id == "R8" and claim.decision == "blocked_missing_doc") %}
+      <section class="card fail stack" style="gap:8px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span class="chip fail">{{ "Fail" if c.verdict == "fail" else "Unsure" }}</span>
+          <h2>{{ c.rule_id }}. Section {{ c.source_section }}</h2>
+          <span class="muted small" style="margin-left:auto">{{ "Measured, decided by code" if c.kind == "measured" else "Judgment by the model" }}</span>
+        </div>
+        <div>{{ c.message }}</div>
+        {% if c.fix %}
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:16px">
+          <div><strong>Fix:</strong> {{ c.fix }}</div>
+        </div>
+        {% elif claim.decision == "not_eligible" %}
+        <div class="muted">This can't be fixed after the fact — the issue is with when or how the ad already ran.</div>
+        {% endif %}
+      </section>
+      {% endif %}
+    {% endfor %}
+
+    <section class="card rows">
+      <div class="stack" style="gap:0">
+        {% for c in checks %}
+          {% if c.verdict == "pass" %}
+          <div class="row cols-check">
+            <span class="chip pass">Pass</span>
+            <div>{{ c.rule_id }}. {{ c.message }}</div>
+            <div class="muted small num">s{{ c.source_section }}</div>
+          </div>
+          {% endif %}
+        {% endfor %}
+        {% if claim.mode == "precheck" %}
+        <div class="row cols-check">
+          <span class="chip info">Later</span>
+          <div>Dates, documents and amounts are checked when you claim</div>
+          <div></div>
+        </div>
+        {% endif %}
+      </div>
+    </section>
+
+    {% if reimb %}
+    <section class="card">
+      <h2 style="margin-bottom:10px">Reimbursement, computed by code</h2>
+      <div class="row cols-money"><span>{{ "Invoice total, the agreed basis" if reimb.amounts_resolved else "Claim form total (amounts not yet agreed)" }}</span><span class="num">${{ "{:,.2f}".format(reimb.submitted) }}</span></div>
+      {% for ex in reimb.excluded %}
+      <div class="row cols-money"><span>Excluded &middot; {{ ex.desc }}</span><span class="num" style="color:var(--fail-fg)">&minus;${{ "{:,.2f}".format(ex.amount) }}</span></div>
+      {% endfor %}
+      {% if not reimb.excluded %}<div class="row cols-money"><span class="muted">Excluded costs. No agency or management fees found</span><span class="num muted">&minus;$0.00</span></div>{% endif %}
+      <div class="row cols-money" style="font-weight:600"><span>Eligible cost</span><span class="num">${{ "{:,.2f}".format(reimb.eligible) }}</span></div>
+      <div class="row cols-money muted"><span>Rate, section 1</span><span class="num">{{ (reimb.rate*100)|round|int }}%</span></div>
+      <div class="row cols-money muted"><span>Balance check. ${{ "{:,.0f}".format(reimb.balance_before) }} available</span><span class="num">{{ "Capped" if reimb.payable < reimb.computed else "Covered" }}</span></div>
+      <div class="row cols-money" style="border-top:1px solid var(--line); margin-top:6px; padding-top:12px;">
+        <span style="font-weight:600">Payable{% if claim.decision in ("hold_question","blocked_missing_doc") %} if resolved{% endif %}</span>
+        <span class="num" style="font: 700 26px var(--display);">${{ "{:,.2f}".format(reimb.payable) }}</span>
+      </div>
+    </section>
     {% endif %}
 
-    {% if claim.decision == "fix_needed" %}
-    <div class="card" style="border-left: 4px solid var(--bad);">
-      <p style="margin:0;">Fix the issue(s) above and re-run pre-check before this ad runs. Nothing is filed in pre-check mode.</p>
-    </div>
+    {% if claim.decision == "needs_approval" %}
+    <section class="card action stack" style="gap:10px;">
+      <h2>Approve filing</h2>
+      <p style="margin:0;">Every rule passes. ${{ "{:,.0f}".format(reimb.payable) }} is over the $500 auto-file limit, so a person decides. The agent files nothing until you approve.</p>
+      <div class="btn-row">
+        <form method="post" action="/claims/{{ claim.id }}/approve">
+          <button class="btn primary large" type="submit">Approve and file ${{ "{:,.0f}".format(reimb.payable) }}</button>
+        </form>
+        <form method="post" action="/claims/{{ claim.id }}/reject">
+          <button class="btn quiet large" type="submit">Reject</button>
+        </form>
+      </div>
+    </section>
     {% endif %}
 
     {% if claim.status == "filed" %}
-    <div class="card" style="border-left: 4px solid var(--good);">
-      <p style="margin:0;">Filed. A pending ledger entry has been recorded &mdash; see <a href="/funds">Funds</a>.</p>
-    </div>
+    <section class="card">
+      <p style="margin:0;">Filed. The agent checks status daily and will confirm the credit memo. See <a href="/funds">Funds</a>.</p>
+    </section>
     {% endif %}
 
-    <div class="card">
-      <h2>Audit log</h2>
-      <table>
-        <thead><tr><th>Step</th><th>Actor</th><th>Note</th><th class="num">Cost</th></tr></thead>
-        <tbody>
-          {% for e in events %}
-          <tr>
-            <td>{{ e.step }}</td>
-            <td>{{ e.actor }}</td>
-            <td class="muted">{{ e.note or "" }}</td>
-            <td class="num">{% if e.cost_usd %}${{ "%.4f"|format(e.cost_usd) }}{% endif %}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+    {% if claim.status == "rejected" %}
+    <section class="card">
+      <p style="margin:0;">Rejected by a reviewer.</p>
+    </section>
+    {% endif %}
+
   </div>
 </div>
 

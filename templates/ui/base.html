@@ -3,22 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Co-op claim agent{% endblock %}</title>
+  <title>{% block title %}Co-op claims{% endblock %}</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-  <nav class="nav">
-    <span class="nav-brand">Co-op claim agent</span>
-    <a class="navlink {% if active == 'home' %}active{% endif %}" href="/">Home</a>
-    <a class="navlink {% if active == 'queue' %}active{% endif %}" href="/queue">Queue</a>
-    <a class="navlink {% if active == 'program' %}active{% endif %}" href="/program">Program</a>
-    <a class="navlink {% if active == 'funds' %}active{% endif %}" href="/funds">Funds</a>
-    <a class="navlink {% if active == 'audit' %}active{% endif %}" href="/audit">Audit</a>
-    <span class="nav-spacer"></span>
-    <span class="nav-cost">replay mode &middot; model cost <strong>${{ "%.4f"|format(nav_cost) }}</strong></span>
-  </nav>
-  <div class="page">
-    {% block content %}{% endblock %}
+  <div class="shell">
+    <nav class="sidebar" aria-label="Main">
+      <div class="brand">Co-op claims</div>
+      <a href="/" class="{% if active == 'home' %}active{% endif %}">Home</a>
+      <a href="/queue" class="{% if active == 'queue' %}active{% endif %}">Needs you {% if needs_you_count %}<span class="badge">{{ needs_you_count }}</span>{% endif %}</a>
+      <a href="/#claims" class="{% if active == 'claims' %}active{% endif %}">Claims</a>
+      <a href="/program" class="{% if active == 'program' %}active{% endif %}">Program rules</a>
+      <a href="/funds" class="{% if active == 'funds' %}active{% endif %}">Funds</a>
+      <a href="/audit" class="{% if active == 'audit' %}active{% endif %}">Audit trail</a>
+      <div class="mode">Replay mode. Saved model responses, no network needed.</div>
+    </nav>
+    <main class="main">
+      {% block content %}{% endblock %}
+    </main>
   </div>
 </body>
 </html>

@@ -1,40 +1,39 @@
 {% extends "base.html" %}
-{% block title %}Funds · Co-op claim agent{% endblock %}
+{% block title %}Funds · Co-op claims{% endblock %}
 {% block content %}
 
-<div class="card">
-  <h1 style="margin:0 0 4px;">Funds &middot; {{ program["name"] if program else "" }} {{ program["year"] if program else "" }}</h1>
-</div>
-
-<div class="card">
-  <div class="stat-grid">
-    <div class="stat"><div class="label">Accrued</div><div class="value">${{ "{:,.0f}".format(metrics.accrued) }}</div></div>
-    <div class="stat"><div class="label">Reimbursed / pending</div><div class="value">${{ "{:,.0f}".format(metrics.reimbursed) }}</div></div>
-    <div class="stat"><div class="label">Approved, not yet paid</div><div class="value">${{ "{:,.0f}".format(metrics.pending) }}</div></div>
-    <div class="stat"><div class="label">Available balance</div><div class="value">${{ "{:,.0f}".format(metrics.balance) }}</div></div>
+<div class="page-head">
+  <div>
+    <h1>{{ program["name"] if program else "" }} funds, {{ program["year"] if program else "" }}</h1>
+    <div class="muted" style="margin-top:6px">Accrues at 2% of purchases, reimbursed at 50%. Purchases to date $610,000.</div>
   </div>
 </div>
 
-<div class="card">
-  <h2>Ledger</h2>
+<div class="grid-4">
+  <div class="card metric"><div class="label">Accrued</div><div class="value">${{ "{:,.0f}".format(metrics.accrued) }}</div></div>
+  <div class="card metric"><div class="label">Reimbursed</div><div class="value">${{ "{:,.0f}".format(metrics.reimbursed) }}</div></div>
+  <div class="card metric"><div class="label">Approved, not yet paid</div><div class="value">${{ "{:,.0f}".format(metrics.pending) }}</div></div>
+  <div class="card metric warn"><div class="label">Unused, expires Dec 31</div><div class="value">${{ "{:,.0f}".format(metrics.balance) }}</div></div>
+</div>
+
+<section class="card">
+  <h2 style="margin-bottom:10px">Ledger</h2>
   {% if entries %}
-  <table>
-    <thead><tr><th>Date</th><th>Kind</th><th>Claim</th><th>Note</th><th class="num">Amount</th></tr></thead>
-    <tbody>
-      {% for e in entries %}
-      <tr>
-        <td class="muted">{{ e["ts"][:10] }}</td>
-        <td><span class="pill {{ 'good' if e['kind'] == 'accrual' else 'info' }}">{{ e["kind"] }}</span></td>
-        <td>{% if e["claim_id"] %}<a href="/claims/{{ e['claim_id'] }}">{{ e["claim_id"] }}</a>{% else %}&mdash;{% endif %}</td>
-        <td class="muted">{{ e["note"] or "" }}</td>
-        <td class="num">{{ "+$" if e["amount"] >= 0 else "-$" }}{{ "{:,.2f}".format(e["amount"] | abs) }}</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+  <div class="stack" style="gap:0">
+    <div class="row head cols-ledger"><div>Date</div><div>Entry</div><div class="num">Amount</div><div class="num">Balance</div></div>
+    {% for e in entries %}
+    <div class="row cols-ledger">
+      <div class="muted">{{ e.ts[:10] }}</div>
+      <div>{{ e.note or e.kind }}{% if e.claim_id %} <a href="/claims/{{ e.claim_id }}">({{ e.claim_id }}{% if e.kind == "pending" %}, pending{% endif %})</a>{% endif %}</div>
+      <div class="num">{{ "+" if e.amount >= 0 else "" }}${{ "{:,.2f}".format(e.amount) }}</div>
+      <div class="num">${{ "{:,.2f}".format(e.running) }}</div>
+    </div>
+    {% endfor %}
+  </div>
   {% else %}
   <div class="empty-state">No ledger entries yet.</div>
   {% endif %}
-</div>
+  <p class="muted small" style="margin:14px 0 0;">Reimbursements arrive as a credit memo on your distributor statement, not as cash.</p>
+</section>
 
 {% endblock %}

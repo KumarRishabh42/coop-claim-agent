@@ -1,33 +1,39 @@
 {% extends "base.html" %}
-{% block title %}Program · Co-op claim agent{% endblock %}
+{% block title %}Program rules · Co-op claims{% endblock %}
 {% block content %}
 
-<div class="card">
-  <h1 style="margin:0 0 4px;">{{ program["name"] if program else "Program" }} {{ program["year"] if program else "" }}</h1>
-  <p class="muted" style="margin:0;">Rules extracted from the guide below, each with the section it came from and a verbatim quote. Citations are checked in code against the guide text &mdash; a quote that doesn't match is flagged, not trusted.</p>
-</div>
-
-<div class="card">
-  <h2>Rules ({{ rules | length }})</h2>
-  {% for r in rules %}
-  <div class="check {{ 'fail' if not r.quote_verified else 'pass' }}">
-    <div class="check-head">
-      <span class="check-rule">{{ r.id }} &middot; {{ r.title }}</span>
-      <span>
-        <span class="pill neutral">{{ r.kind }}</span>
-        {% if not r.quote_verified %}<span class="pill bad">quote unverified</span>{% endif %}
-      </span>
-    </div>
-    <div class="check-message">Section {{ r.source_section }}: &ldquo;{{ r.source_quote }}&rdquo;</div>
-    {% if r.applies_to %}<div class="check-meta">Applies to: {{ r.applies_to | join(", ") }}</div>{% endif %}
-    {% if r.on_fail %}<div class="check-fix">{{ r.on_fail }}</div>{% endif %}
+<div class="page-head">
+  <div>
+    <h1>{{ program["name"] if program else "Program" }} {{ program["year"] if program else "" }}</h1>
+    <div class="muted" style="margin-top:6px">{{ rules | length }} rules extracted. {{ verified_count }} of {{ rules | length }} quotes found word for word in the guide. Cost ${{ "%.2f"|format(rules_cost) }}.</div>
   </div>
-  {% endfor %}
 </div>
 
-<div class="card">
-  <h2>Guide text</h2>
-  <pre class="guide">{{ guide_text }}</pre>
+<div class="grid-2" style="grid-template-columns: 1fr 1fr;">
+  <section class="card">
+    <h2 style="margin-bottom:10px">The guide, as the manufacturer wrote it</h2>
+    <pre style="white-space:pre-wrap; font: 400 14px/1.7 var(--body); margin:0;">{{ marked_guide_html | safe }}</pre>
+  </section>
+
+  <div class="stack">
+    <section class="card rows">
+      <div class="stack" style="gap:0">
+        {% for r in rules %}
+        <div class="row" style="grid-template-columns: 36px 1fr; {{ 'opacity:0.5' if not r.quote_verified else '' }}">
+          <div><strong>{{ r.id }}</strong></div>
+          <div>
+            <div>{{ r.title }}</div>
+            <div class="small muted" style="margin-top:2px;">
+              {{ "Judgment" if r.kind == "judgment" else "Code, measured" if r.check.type == "logo_size" else "Code" }}
+              &middot;
+              {% if r.quote_verified %}<span style="color:var(--pass-fg)">Quote verified, s{{ r.source_section }}</span>{% else %}<span style="color:var(--fail-fg)">Quote not found</span>{% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
 </div>
 
 {% endblock %}

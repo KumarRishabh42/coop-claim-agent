@@ -5,7 +5,7 @@
 <div class="page-head">
   <div>
     <h1>{{ dealer["name"] if dealer else "Dealer" }}</h1>
-    {% if program %}<div class="muted" style="margin-top:6px">{{ program["name"] }} {{ program["year"] }} program. Reimbursed at {{ (rate*100)|round|int }}%. Claim by {{ claim_by }}.</div>{% endif %}
+    {% if program %}<div class="muted" style="margin-top:6px">{{ program["name"] }} {{ program["year"] }} program. Reimbursed at {{ (rate*100)|round|int }}%.{% if claim_by %} Claim by {{ claim_by }}.{% endif %}</div>{% endif %}
   </div>
   <div class="btn-row">
     <a class="btn accent large" href="/claims/upload">📤 Upload a dealer packet</a>

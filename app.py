@@ -108,12 +108,13 @@ def _dealer_id() -> str:
 
 
 def _program_id(conn: sqlite3.Connection) -> str:
-    """The active program: the one most recently uploaded, or the seeded
-    default if nothing has been uploaded yet."""
-    row = conn.execute("SELECT value FROM app_state WHERE key='active_program_id'").fetchone()
-    if row:
-        return row["value"]
-    return _cfg()["program"]["id"]
+    """The active program. Hardcoded rather than read from app_state: on a
+    serverless host each instance has its own isolated /tmp, so a value
+    written by one request (e.g. a live /program/upload) is invisible to
+    whichever instance handles the next one — DB-stored "active program"
+    flaps unpredictably there. A fixed constant is identical everywhere."""
+    from agent.seed import BMW_PROGRAM_ID
+    return BMW_PROGRAM_ID
 
 
 def _set_active_program(conn: sqlite3.Connection, program_id: str) -> None:
@@ -184,8 +185,12 @@ def home(request: Request, conn: sqlite3.Connection = Depends(db)):
     n_claims = len(claim_rows)
     cost_per_task = round(total_cost / n_claims, 2) if n_claims else 0.0
 
-    r7 = conn.execute("SELECT check_json FROM rules WHERE id='R7' AND program_id=?", (program_id,)).fetchone()
-    claim_by = json.loads(r7["check_json"]).get("claim_by") if r7 else None
+    claim_by = None
+    for row in conn.execute("SELECT check_json FROM rules WHERE program_id=?", (program_id,)):
+        check = json.loads(row["check_json"])
+        if check.get("type") == "date_window" and check.get("claim_by"):
+            claim_by = check["claim_by"]
+            break
 
     balance = ledger.balance(conn, dealer_id, program_id) if program else 0.0
     accrued = ledger.accrued_total(conn, dealer_id, program_id) if program else 0.0

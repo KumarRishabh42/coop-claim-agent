@@ -5,77 +5,136 @@
 <div class="page-head">
   <div>
     <h1>Upload a dealer packet</h1>
-    <div class="muted" style="margin-top:6px">Checked live against {{ program["name"] if program else "the active program" }}.</div>
+    <div class="muted" style="margin-top:6px">Checked live against <strong>{{ program["name"] if program else "the active program" }}</strong>. Only the ad is required.</div>
   </div>
 </div>
 
-<section class="card" style="max-width:640px;">
-  <form method="post" action="/claims/upload" enctype="multipart/form-data" class="stack">
+<form method="post" action="/claims/upload" enctype="multipart/form-data" id="upload-form">
+  <div class="grid-2" style="grid-template-columns: 1fr 1fr; align-items:start;">
 
-    <div class="grid-3">
-      <label class="stack" style="gap:6px;">
-        <span class="small" style="font-weight:600">Mode</span>
-        <select name="mode" style="height:44px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
-          <option value="claim">Full claim</option>
-          <option value="precheck">Pre-check (ad only)</option>
-        </select>
+    <section class="card stack">
+      <h2>The ad</h2>
+      <label class="dropzone big" data-dz>
+        <div class="dz-icon">🖼️</div>
+        <div class="dz-main">Click to upload, or drag and drop</div>
+        <div class="dz-sub">PNG, JPG or PDF</div>
+        <img class="thumb-preview" hidden>
+        <input name="ad_file" type="file" accept="image/*,.pdf" required>
       </label>
-      <label class="stack" style="gap:6px;">
-        <span class="small" style="font-weight:600">Medium</span>
-        <select name="medium" style="height:44px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
-          <option value="direct_mail">Direct mail</option>
-          <option value="newspaper">Newspaper</option>
-          <option value="paid_social">Paid social</option>
-          <option value="paid_search">Paid search</option>
-          <option value="radio">Radio</option>
-        </select>
-      </label>
-      <label class="stack" style="gap:6px;">
-        <span class="small" style="font-weight:600">Submitted on</span>
-        <input name="submitted_on" type="date" value="{{ today }}" required style="height:44px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
-      </label>
-    </div>
 
-    <div class="grid-3">
-      <label class="stack" style="gap:6px;">
-        <span class="small" style="font-weight:600">Ad width, in</span>
-        <input name="width_in" type="number" step="0.1" value="6" style="height:44px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
-      </label>
-      <label class="stack" style="gap:6px;">
-        <span class="small" style="font-weight:600">Ad height, in</span>
-        <input name="height_in" type="number" step="0.1" value="4" style="height:44px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
-      </label>
-      <div></div>
-    </div>
+      <div class="grid-3" style="margin-top:4px;">
+        <label class="stack" style="gap:6px;">
+          <span class="field-label">Mode</span>
+          <select name="mode" class="field-input">
+            <option value="claim">Full claim</option>
+            <option value="precheck">Pre-check (ad only)</option>
+          </select>
+        </label>
+        <label class="stack" style="gap:6px;">
+          <span class="field-label">Medium</span>
+          <select name="medium" class="field-input">
+            <option value="direct_mail">Direct mail</option>
+            <option value="newspaper">Newspaper</option>
+            <option value="paid_social">Paid social</option>
+            <option value="paid_search">Paid search</option>
+            <option value="radio">Radio</option>
+          </select>
+        </label>
+        <label class="stack" style="gap:6px;">
+          <span class="field-label">Submitted on</span>
+          <input class="field-input" name="submitted_on" type="date" value="{{ today }}" required>
+        </label>
+      </div>
+      <div class="grid-3">
+        <label class="stack" style="gap:6px;">
+          <span class="field-label">Ad width, in</span>
+          <input class="field-input" name="width_in" type="number" step="0.1" value="6">
+        </label>
+        <label class="stack" style="gap:6px;">
+          <span class="field-label">Ad height, in</span>
+          <input class="field-input" name="height_in" type="number" step="0.1" value="4">
+        </label>
+        <div></div>
+      </div>
 
-    <label class="stack" style="gap:6px;">
-      <span class="small" style="font-weight:600">Ad (image or PDF)</span>
-      <input name="ad_file" type="file" accept="image/*,.pdf" required style="padding:8px 0;">
-    </label>
+      <button class="btn primary large" type="submit" style="margin-top:6px;">Check this packet</button>
+      <p class="muted small" style="margin:0;">Makes real model calls (a few cents) and creates a claim you can act on like any other.</p>
+    </section>
 
-    <div id="claim-docs" class="grid-2" style="grid-template-columns: 1fr 1fr;">
-      <label class="stack" style="gap:6px;">
-        <span class="small" style="font-weight:600">Invoice <span class="muted" style="font-weight:400">(optional)</span></span>
-        <input name="invoice_file" type="file" accept="image/*,.pdf" style="padding:8px 0;">
-      </label>
-      <label class="stack" style="gap:6px;">
-        <span class="small" style="font-weight:600">Proof of payment <span class="muted" style="font-weight:400">(optional)</span></span>
-        <input name="payment_file" type="file" accept="image/*,.pdf" style="padding:8px 0;">
-      </label>
-      <label class="stack" style="gap:6px;">
-        <span class="small" style="font-weight:600">Claim form <span class="muted" style="font-weight:400">(optional)</span></span>
-        <input name="claim_form_file" type="file" accept="image/*,.pdf" style="padding:8px 0;">
-      </label>
-      <label class="stack" style="gap:6px;">
-        <span class="small" style="font-weight:600">Station affidavit <span class="muted" style="font-weight:400">(radio only)</span></span>
-        <input name="affidavit_file" type="file" accept="image/*,.pdf" style="padding:8px 0;">
-      </label>
-    </div>
-    <p class="muted small" style="margin:0;">Skip any document and a sample ($760 invoice/payment/claim form, all agreeing) fills in automatically, so just the ad is enough to see a full result.</p>
+    <section class="card stack">
+      <h2>Supporting documents <span class="optional-tag">— optional, a matching $760 sample fills in anything you skip</span></h2>
+      <div class="dropzone-grid">
+        <label class="dropzone" data-dz>
+          <div class="dz-icon">🧾</div>
+          <div class="dz-main">Invoice</div>
+          <div class="dz-sub">optional</div>
+          <img class="thumb-preview" hidden>
+          <input name="invoice_file" type="file" accept="image/*,.pdf">
+        </label>
+        <label class="dropzone" data-dz>
+          <div class="dz-icon">💳</div>
+          <div class="dz-main">Proof of payment</div>
+          <div class="dz-sub">optional</div>
+          <img class="thumb-preview" hidden>
+          <input name="payment_file" type="file" accept="image/*,.pdf">
+        </label>
+        <label class="dropzone" data-dz>
+          <div class="dz-icon">📋</div>
+          <div class="dz-main">Claim form</div>
+          <div class="dz-sub">optional</div>
+          <img class="thumb-preview" hidden>
+          <input name="claim_form_file" type="file" accept="image/*,.pdf">
+        </label>
+        <label class="dropzone" data-dz>
+          <div class="dz-icon">📻</div>
+          <div class="dz-main">Station affidavit</div>
+          <div class="dz-sub">radio only</div>
+          <img class="thumb-preview" hidden>
+          <input name="affidavit_file" type="file" accept="image/*,.pdf">
+        </label>
+      </div>
 
-    <button class="btn primary large" type="submit">Check this packet</button>
-    <p class="muted small" style="margin:0;">This makes real model calls (a few cents) and creates a new claim you can act on like any other.</p>
-  </form>
-</section>
+      <div class="quote" style="margin-top:4px;">
+        <strong>Try it fast:</strong> grab a ready-made sample from
+        <a href="https://github.com/KumarRishabh42/coop-claim-agent/tree/main/demo_assets" target="_blank" rel="noopener">demo_assets</a>
+        in the repo — <code>ad-pass.png</code> auto-files, <code>ad-fail.png</code> fails on logo size.
+      </div>
+    </section>
+
+  </div>
+</form>
+
+<script>
+(function () {
+  document.querySelectorAll('[data-dz]').forEach(function (dz) {
+    var input = dz.querySelector('input[type=file]');
+    var main = dz.querySelector('.dz-main');
+    var img = dz.querySelector('.thumb-preview');
+    var defaultText = main.textContent;
+
+    input.addEventListener('change', function () {
+      var f = input.files[0];
+      if (!f) { dz.classList.remove('has-file'); main.textContent = defaultText; img.hidden = true; return; }
+      dz.classList.add('has-file');
+      main.textContent = '✓ ' + f.name;
+      if (f.type.startsWith('image/')) {
+        img.src = URL.createObjectURL(f);
+        img.hidden = false;
+      } else {
+        img.hidden = true;
+      }
+    });
+    dz.addEventListener('dragover', function (e) { e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', function () { dz.classList.remove('dragover'); });
+    dz.addEventListener('drop', function (e) {
+      dz.classList.remove('dragover');
+      if (e.dataTransfer.files.length) {
+        input.files = e.dataTransfer.files;
+        input.dispatchEvent(new Event('change'));
+      }
+    });
+  });
+})();
+</script>
 
 {% endblock %}

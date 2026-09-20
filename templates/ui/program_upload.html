@@ -9,19 +9,49 @@
   </div>
 </div>
 
-<section class="card" style="max-width:560px;">
+<section class="card stack" style="max-width:560px;">
   <form method="post" action="/program/upload" enctype="multipart/form-data" class="stack">
     <label class="stack" style="gap:6px;">
-      <span class="small" style="font-weight:600">Brand / program name</span>
-      <input name="brand_name" type="text" placeholder="e.g. Northwind Comfort" style="height:44px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font:inherit;">
+      <span class="field-label">Brand / program name</span>
+      <input class="field-input" name="brand_name" type="text" placeholder="e.g. Northwind Comfort">
     </label>
-    <label class="stack" style="gap:6px;">
-      <span class="small" style="font-weight:600">Guide file (PDF or .txt/.md)</span>
-      <input name="guide_file" type="file" accept=".pdf,.txt,.md" required style="padding:8px 0;">
+
+    <label class="dropzone big" data-dz>
+      <div class="dz-icon">📄</div>
+      <div class="dz-main">Click to upload, or drag and drop</div>
+      <div class="dz-sub">PDF, .txt or .md</div>
+      <input name="guide_file" type="file" accept=".pdf,.txt,.md" required>
     </label>
+
     <button class="btn primary large" type="submit">Extract rules</button>
     <p class="muted small" style="margin:0;">This makes a real model call (a few cents) and becomes the active program for new claims.</p>
+    <div class="quote">
+      <strong>Try it fast:</strong> grab
+      <a href="https://github.com/KumarRishabh42/coop-claim-agent/tree/main/demo_assets" target="_blank" rel="noopener">demo_assets/northwind-2026-guide.md</a>
+      from the repo.
+    </div>
   </form>
 </section>
+
+<script>
+(function () {
+  document.querySelectorAll('[data-dz]').forEach(function (dz) {
+    var input = dz.querySelector('input[type=file]');
+    var main = dz.querySelector('.dz-main');
+    var defaultText = main.textContent;
+    input.addEventListener('change', function () {
+      var f = input.files[0];
+      dz.classList.toggle('has-file', !!f);
+      main.textContent = f ? '✓ ' + f.name : defaultText;
+    });
+    dz.addEventListener('dragover', function (e) { e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', function () { dz.classList.remove('dragover'); });
+    dz.addEventListener('drop', function (e) {
+      dz.classList.remove('dragover');
+      if (e.dataTransfer.files.length) { input.files = e.dataTransfer.files; input.dispatchEvent(new Event('change')); }
+    });
+  });
+})();
+</script>
 
 {% endblock %}

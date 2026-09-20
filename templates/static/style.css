@@ -121,3 +121,31 @@ form.inline { display: inline; }
 .doc-missing { border: 1px dashed var(--fail-line); border-radius: 6px; padding: 18px 8px; text-align: center; color: var(--fail-fg); font-size: 12.5px; }
 
 .empty-state { text-align: center; padding: 32px 16px; color: var(--muted); }
+
+/* Upload forms */
+.field-label { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+.field-input { height: 44px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; background: var(--surface); color: var(--ink); width: 100%; }
+.field-input:focus-visible { outline: 3px solid #5B8DEF; outline-offset: 1px; }
+
+.dropzone {
+  position: relative;
+  border: 2px dashed var(--dash);
+  border-radius: var(--radius);
+  background: var(--ground);
+  padding: 28px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.dropzone:hover, .dropzone.dragover { border-color: var(--ink); background: var(--pass-bg); }
+.dropzone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.dropzone .dz-icon { font-size: 26px; line-height: 1; margin-bottom: 8px; }
+.dropzone .dz-main { font-weight: 600; font-size: 14px; }
+.dropzone .dz-sub { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+.dropzone.has-file { border-style: solid; border-color: var(--pass-fg); background: var(--pass-bg); }
+.dropzone.has-file .dz-main { color: var(--pass-fg); }
+.dropzone.big { padding: 44px 16px; }
+.dropzone.big .dz-icon { font-size: 40px; }
+.dropzone-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+.optional-tag { font-weight: 400; color: var(--muted); font-size: 12px; }
+.thumb-preview { margin-top: 10px; max-height: 90px; border-radius: 6px; border: 1px solid var(--line); }

@@ -28,3 +28,16 @@ rule fail with a specific, cited fix.
 Upload `northwind-2026-guide.md` at `/program/upload` first (or your own real
 PDF), then repeat the steps above — the packet is checked live against
 whichever guide is currently active.
+
+### A real-world example: BMW Motorrad's 2026 co-op guidelines
+
+[2026 Co-op Guidelines (PDF)](https://www.bmwmotorraddealerprograms.com/docs/2026-Co-op%20Guidelines.pdf)
+— BMW's own public dealer-program site. Download it and upload it at
+`/program/upload` to see rule extraction run against a real, 16-page
+manufacturer guide instead of the synthetic one above (a bigger, messier
+document than this prototype's 9 supported rule types fully cover — some
+rules get skipped rather than mis-decided, which is expected). Then pair it
+with `bmw-ad-pass.png` / `bmw-ad-fail.png` in this folder.
+
+We're linking to BMW's own copy rather than mirroring the PDF in this repo —
+it's their document.

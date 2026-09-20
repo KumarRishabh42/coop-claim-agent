@@ -29,9 +29,9 @@
     "affidavit": null
   },
   "usage": {
-    "model": "claude-sonnet-5",
-    "tokens_in": 900,
-    "tokens_out": 340,
-    "cost_usd": 0.0052
+    "model": "claude-haiku-4-5-20251001",
+    "tokens_in": 2679,
+    "tokens_out": 201,
+    "cost_usd": 0.003684
   }
 }

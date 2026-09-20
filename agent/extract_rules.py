@@ -12,14 +12,60 @@ from agent.models import Rule, RuleCheck, RuleSource, Usage
 EXTRACT_PROMPT = """You are reading a manufacturer co-op advertising program guide.
 
 Return one rule per numbered guide section that constrains what a dealer may
-claim. For "check.type" use only one of: logo_size, required_text,
-eligible_media, no_competing_brands, restricted_offer, date_window,
-required_documents, amounts_match, funds_terms.
+claim, as JSON matching this exact shape (one entry per rule):
 
-Every rule needs a source.section (the guide's section number as a string)
-and a source.quote of 25 words or fewer copied VERBATIM from the guide —
-citations are checked programmatically against the guide text, so do not
-paraphrase.
+{{
+  "rules": [
+    {{
+      "id": "R3",
+      "title": "Brand logo minimum size",
+      "kind": "measured",
+      "applies_to": ["direct_mail", "newspaper", "paid_social"],
+      "check": {{"type": "logo_size", "min_width_in": 1.0, "min_ratio_to_dealer_logo": 0.5}},
+      "source": {{"section": "3", "quote": "at least 1 inch wide and at least half the width of the dealer's logo"}},
+      "on_fail": "Enlarge the brand logo to at least {{required_in}} in."
+    }}
+  ]
+}}
+
+Rules:
+- "id" is a short id like "R1", "R2", in guide order.
+- "kind" is "measured" (code can decide it from facts alone) or "judgment"
+  (needs a model's subjective read, e.g. whether an offer is "restricted").
+- "applies_to" is a list of media the rule applies to, or [] for all media.
+- "source.section" is the guide's section number as a string.
+- "source.quote" is 25 words or fewer copied VERBATIM, character-for-character,
+  from the guide — citations are checked programmatically against the guide
+  text, so a shortened, reworded, or trimmed quote will fail verification.
+  Copy a complete clause or sentence exactly as written; when in doubt, quote
+  more rather than paraphrasing to fit fewer words.
+- "on_fail" is a short, specific instruction for how a dealer would fix a
+  failure of this rule, or null if fixing isn't a single clear action. For a
+  "logo_size" rule specifically, "on_fail" MUST contain the literal text
+  "{{required_in}}" as a placeholder (e.g. "Enlarge the logo to at least
+  {{required_in}} in.") — code fills that placeholder in with the actual
+  number for a given ad, so it must be present verbatim, not replaced with
+  an example number.
+
+"check" must be EXACTLY one of the 9 full objects below, with "type" INSIDE
+"check" every time as shown (a downstream program reads these fields by
+exact name — inventing different names or nesting, even reasonable
+synonyms, will break it). Use only the one(s) that fit what the guide
+actually says for each rule; skip a shape if the guide has nothing like it.
+
+- {{"type": "funds_terms", "rate": 0.5, "accrual_rate": 0.02, "excluded_categories": ["agency fee", "management fee"]}}
+  (rate and accrual_rate are fractions like 0.5 for 50%, not 50; excluded_categories lists cost types the guide says are NOT reimbursed)
+- {{"type": "eligible_media", "allowed": ["direct_mail", "newspaper", "radio", "paid_social", "paid_search"], "excluded": ["directories"]}}
+- {{"type": "logo_size", "min_width_in": 1.0, "min_ratio_to_dealer_logo": 0.5}}
+- {{"type": "required_text", "text": "Comfort you can count on"}}
+- {{"type": "restricted_offer", "trigger_words": ["free"], "requires_doc": "territory_manager_approval"}}
+- {{"type": "no_competing_brands"}}  (no other parameters)
+- {{"type": "date_window", "activity_start": "2026-01-01", "activity_end": "2026-12-31", "claim_within_days": 60, "claim_by": "2026-12-15"}}
+- {{"type": "required_documents", "docs": ["ad", "invoice", "payment", "claim_form"], "extra_by_medium": {{"radio": ["affidavit"]}}}}
+  (docs uses exactly these names: "ad" (or script), "invoice", "payment", "claim_form"; extra_by_medium maps a medium name to any additional docs it needs, or {{}} if none)
+- {{"type": "amounts_match", "tolerance_usd": 1.0}}
+
+Return ONLY the JSON object. No markdown code fences, no prose before or after.
 
 ---GUIDE---
 {guide_text}

@@ -4,16 +4,18 @@
 
 model:
   provider: anthropic
-  # DECISION: Claude Sonnet is the multimodal, structured-output model used
-  # for every model call in this repo (rule extraction, ad pre-check, document
-  # extraction). One model, one wrapper (agent/llm.py), per spec section 10.
-  name: claude-sonnet-5
+  # DECISION: Claude Haiku 4.5 is the multimodal, structured-output model
+  # used for every model call in this repo (rule extraction, ad pre-check,
+  # document extraction). One model, one wrapper (agent/llm.py), per spec
+  # section 10. Chosen over Sonnet for this PoC's demo cost — swap the name
+  # (and prices below) for a stronger model if extraction quality needs it.
+  name: claude-haiku-4-5-20251001
   max_tokens: 4096
-  # USD per token, from claude.com/pricing as of 2026-09-19: $2/MTok in,
-  # $10/MTok out for Claude Sonnet 5. Update alongside the model name if it
+  # USD per token, from claude.com/pricing as of 2026-09-19: $1/MTok in,
+  # $5/MTok out for Claude Haiku 4.5. Update alongside the model name if it
   # changes — never hardcode a price from memory.
-  price_in_per_token: 0.000002
-  price_out_per_token: 0.00001
+  price_in_per_token: 0.000001
+  price_out_per_token: 0.000005
 
 policy:
   auto_file_threshold_usd: 500.0

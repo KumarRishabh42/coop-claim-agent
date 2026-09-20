@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Any, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 # --------------------------------------------------------------------------
 # 6.1 Rule
@@ -101,6 +101,13 @@ class InvoiceFacts(BaseModel):
     date: Optional[str] = None
     total: Optional[float] = None
     line_items: list[LineItem] = Field(default_factory=list)
+
+    @field_validator("line_items", mode="before")
+    @classmethod
+    def _none_becomes_empty(cls, v):
+        # A model may return null when no line-item breakdown is visible on
+        # the document rather than an empty list — treat them the same.
+        return v or []
 
 
 class PaymentFacts(BaseModel):

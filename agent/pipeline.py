@@ -72,9 +72,10 @@ def run_packet(conn: sqlite3.Connection, manifest: PacketManifest, packet_dir: P
 
     doc_facts = None
     if manifest.mode == "claim":
+        files = manifest.files.model_dump()
         present_names = [k for k in ("invoice", "payment", "claim_form", "affidavit") if documents_present.get(k)]
-        blob = ("Documents present: " + ", ".join(present_names)) if present_names else "No claim documents present."
-        doc_facts, usage2 = extract_documents(manifest.packet_id, blob)
+        images = [(packet_dir / files[k]).read_bytes() for k in present_names]
+        doc_facts, usage2 = extract_documents(manifest.packet_id, images)
         cost_usd += usage2.cost_usd
         audit.log(conn, "documents", "agent", claim_id=claim_id, input_ref=f"packets/{manifest.packet_id}/",
                    model=usage2.model, tokens_in=usage2.tokens_in, tokens_out=usage2.tokens_out, cost_usd=usage2.cost_usd,

@@ -13,22 +13,25 @@
     "dealer_logo_bbox_px": [
       40,
       36,
-      520,
+      522,
       120
     ],
     "text_found": [
+      "Summit Heating and Air",
       "Fall furnace tune-up, $89",
-      "Comfort you can count on"
+      "Comfort you can count on",
+      "Northwind Comfort"
     ],
     "brands_mentioned": [
+      "Summit Heating and Air",
       "Northwind Comfort"
     ],
     "offer_phrases": []
   },
   "usage": {
-    "model": "claude-sonnet-5",
-    "tokens_in": 1400,
-    "tokens_out": 260,
-    "cost_usd": 0.0054
+    "model": "claude-haiku-4-5-20251001",
+    "tokens_in": 1547,
+    "tokens_out": 142,
+    "cost_usd": 0.002257
   }
 }

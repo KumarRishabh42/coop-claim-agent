@@ -158,9 +158,10 @@ def make_packet(spec: dict) -> None:
 
     if spec["mode"] == "claim":
         if spec.get("has_invoice", True):
+            line_item_lines = [f"  {li['desc']}: ${li['amount']:,.2f}" for li in spec["line_items"]]
             render_document_card(pdir / "invoice.png", "Vendor invoice", [
                 f"Vendor: {spec['vendor']}", f"Invoice #: {spec['invoice_number']}",
-                f"Date: {spec['invoice_date']}", f"Total: ${spec['invoice_total']:,.2f}",
+                f"Date: {spec['invoice_date']}", *line_item_lines, f"Total: ${spec['invoice_total']:,.2f}",
             ])
             files["invoice"] = "invoice.png"
             doc_facts["invoice"] = {

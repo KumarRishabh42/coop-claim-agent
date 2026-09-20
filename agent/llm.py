@@ -13,6 +13,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import re
 from pathlib import Path
 from typing import Optional
 
@@ -84,6 +85,18 @@ def _replay(task: str, key: str, schema: type[BaseModel]) -> tuple[BaseModel, Us
     return parsed, usage
 
 
+_FENCE_RE = re.compile(r"^```(?:json)?\s*\n?|\n?```\s*$", re.MULTILINE)
+
+
+def _strip_markdown_fence(text: str) -> str:
+    """Models sometimes wrap JSON in ```json ... ``` despite instructions not
+    to. Strip it rather than failing the whole call over formatting."""
+    text = text.strip()
+    if text.startswith("```"):
+        text = _FENCE_RE.sub("", text).strip()
+    return text
+
+
 def _save_recording(task: str, key: str, raw: dict, usage: Usage) -> None:
     _recordings_dir().mkdir(parents=True, exist_ok=True)
     path = _recording_path(task, key)
@@ -120,7 +133,7 @@ def _call_live(text, images, system, cfg, mode, retry_hint: bool = False) -> tup
     resp.raise_for_status()
     data = resp.json()
     text_out = "".join(b["text"] for b in data["content"] if b["type"] == "text")
-    raw = json.loads(text_out)
+    raw = json.loads(_strip_markdown_fence(text_out))
     usage_raw = data["usage"]
     tokens_in, tokens_out = usage_raw["input_tokens"], usage_raw["output_tokens"]
     cost = round(tokens_in * cfg["price_in_per_token"] + tokens_out * cfg["price_out_per_token"], 6)

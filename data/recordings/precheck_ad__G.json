@@ -1,0 +1,20 @@
+{
+  "result": {
+    "image_size_px": [1200, 800],
+    "brand_logo_bbox_px": [840, 40, 1160, 92],
+    "dealer_logo_bbox_px": [40, 36, 520, 120],
+    "text_found": [
+      "Fall service special, $99",
+      "The Ultimate Riding Machine",
+      "©2026 BMW of North America, LLC"
+    ],
+    "brands_mentioned": ["BMW Motorrad"],
+    "offer_phrases": []
+  },
+  "usage": {
+    "model": "claude-haiku-4-5-20251001",
+    "tokens_in": 1400,
+    "tokens_out": 200,
+    "cost_usd": 0.0026
+  }
+}

@@ -49,10 +49,11 @@ def _self_seed_on_cold_start():
     empty on every cold start — seed the canonical demo straight from the
     bundled replay fixtures (no network) so the app isn't blank/broken."""
     if IS_SERVERLESS and not db_path().exists():
-        from agent.seed import run_all_packets, seed_program_and_rules
+        from agent.seed import run_all_packets, seed_bmw_program, seed_program_and_rules
         conn = reset_db()
         seed_program_and_rules(conn)
         run_all_packets(conn)
+        seed_bmw_program(conn)
         conn.close()
 
 # UI-SPEC.md 4.1

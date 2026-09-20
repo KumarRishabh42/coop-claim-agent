@@ -1,0 +1,15 @@
+{
+  "packet_id": "G",
+  "mode": "claim",
+  "dealer_id": "summit",
+  "program_id": "bmw-motorrad-2026",
+  "medium": "direct_mail",
+  "physical_size_in": {"width": 6, "height": 4},
+  "submitted_on": "2026-10-01",
+  "files": {
+    "ad": "ad.png",
+    "invoice": "invoice.png",
+    "payment": "payment.png",
+    "claim_form": "claim_form.png"
+  }
+}

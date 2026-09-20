@@ -82,9 +82,25 @@ MEDIUM_LABELS = {
 QUEUE_DECISIONS = ("needs_approval", "hold_question", "blocked_missing_doc")
 
 
+def _ensure_seeded(conn: sqlite3.Connection) -> None:
+    """Self-healing: makes sure both programs exist before serving a
+    request, rather than relying solely on the startup hook. On a
+    serverless host, instances can land in inconsistent partial states
+    (one seeded Northwind but crashed before BMW, another has neither) —
+    checking per-request is cheap (one SELECT) and fixes any of them
+    immediately instead of leaving a broken "Program" page up."""
+    from agent.seed import BMW_PROGRAM_ID, run_all_packets, seed_bmw_program, seed_program_and_rules
+    if not conn.execute("SELECT 1 FROM programs WHERE id=?", (_cfg()["program"]["id"],)).fetchone():
+        seed_program_and_rules(conn)
+        run_all_packets(conn)
+    if not conn.execute("SELECT 1 FROM programs WHERE id=?", (BMW_PROGRAM_ID,)).fetchone():
+        seed_bmw_program(conn)
+
+
 def db() -> sqlite3.Connection:
     conn = get_conn()
     init_db(conn)
+    _ensure_seeded(conn)
     try:
         yield conn
     finally:

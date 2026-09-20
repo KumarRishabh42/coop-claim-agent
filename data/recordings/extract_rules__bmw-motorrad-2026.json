@@ -1,0 +1,291 @@
+{
+  "result": {
+    "rules": [
+      {
+        "id": "R1",
+        "title": "BMW Motorrad logo required in all media",
+        "kind": "judgment",
+        "applies_to": [],
+        "check": null,
+        "source": {
+          "section": "2",
+          "quote": "The BMW Motorrad logo must be presented in all media and event communications except where noted."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R2",
+        "title": "Co-op funds for BMW Motorrad advertising only",
+        "kind": "judgment",
+        "applies_to": [],
+        "check": null,
+        "source": {
+          "section": "2",
+          "quote": "Co-op funds can only be used for BMW Motorrad advertising. Advertising and activities that include other OEMs and non-BMW product will not be covered in full."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R3",
+        "title": "No distressed language in advertisements",
+        "kind": "judgment",
+        "applies_to": [],
+        "check": null,
+        "source": {
+          "section": "2",
+          "quote": "Distressed language is harmful to the BMW Motorrad brand and renders the ad ineligible in its entirety."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R4",
+        "title": "Claim submission deadline",
+        "kind": "measured",
+        "applies_to": [],
+        "check": {
+          "type": "date_window",
+          "activity_start": "2026-01-01",
+          "activity_end": "2026-12-31",
+          "claim_within_days": 30,
+          "claim_by": null
+        },
+        "source": {
+          "section": "2",
+          "quote": "All claims must be submitted within 30 days after the activity end date with all required documentation."
+        },
+        "on_fail": "Submit claim within 30 days of activity end date."
+      },
+      {
+        "id": "R5",
+        "title": "Budget spending threshold by July 31",
+        "kind": "measured",
+        "applies_to": [],
+        "check": null,
+        "source": {
+          "section": "3",
+          "quote": "A snapshot of the spending percentages will be taken on July 31st and will reflect claims that have been processed."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R6",
+        "title": "Digital advertising radius targeting within AOR",
+        "kind": "judgment",
+        "applies_to": [
+          "paid_social",
+          "paid_search"
+        ],
+        "check": null,
+        "source": {
+          "section": "2",
+          "quote": "Digital advertising radius targeting must be within the dealers AOR only. Dealers may advertise up to a 20 mile radius from their exact dealer location."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R7",
+        "title": "Paid Search keywords must be dealer DBA focused",
+        "kind": "judgment",
+        "applies_to": [
+          "paid_search"
+        ],
+        "check": null,
+        "source": {
+          "section": "4",
+          "quote": "Search engine marketing campaigns must be comprised primarily of BMW Motorrad specific keywords, the dealer DBA name and location."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R8",
+        "title": "Digital ads must link to BMW Motorrad landing page",
+        "kind": "judgment",
+        "applies_to": [
+          "paid_social",
+          "paid_search"
+        ],
+        "check": null,
+        "source": {
+          "section": "4",
+          "quote": "All links for ads and search terms must click through to an exclusive BMW Motorrad web page."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R9",
+        "title": "Multiline dealers must link to BMW landing page not homepage",
+        "kind": "judgment",
+        "applies_to": [],
+        "check": null,
+        "source": {
+          "section": "4",
+          "quote": "All media must drive to a BMW Motorrad landing page on the dealers website, it cannot drive to a homepage if it's a multiline dealer."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R10",
+        "title": "Radio spots must mention current BMW Motorrad models",
+        "kind": "judgment",
+        "applies_to": [
+          "radio"
+        ],
+        "check": null,
+        "source": {
+          "section": "4",
+          "quote": "Radio spots must mention one or more current BMW Motorrad models."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R11",
+        "title": "Broadcast must include brand tagline",
+        "kind": "judgment",
+        "applies_to": [
+          "radio"
+        ],
+        "check": {
+          "type": "required_text",
+          "text": "Make Life a Ride"
+        },
+        "source": {
+          "section": "4",
+          "quote": "Broadcast (video, radio) must mention either BMW Motorrad or BMW Motorcycles and \"Make Life a Ride\"."
+        },
+        "on_fail": "Include \"Make Life a Ride\" in broadcast spot."
+      },
+      {
+        "id": "R12",
+        "title": "Direct mail recipients must be within AOR or dealer records",
+        "kind": "judgment",
+        "applies_to": [
+          "direct_mail"
+        ],
+        "check": null,
+        "source": {
+          "section": "4",
+          "quote": "Recipients must be within the Dealers AOR or exist in the dealer's records."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R13",
+        "title": "Vehicle wraps must display dealership address and BMW Motorrad logo",
+        "kind": "judgment",
+        "applies_to": [],
+        "check": null,
+        "source": {
+          "section": "4",
+          "quote": "Vehicle wraps: Must feature the dealership's address and display the BMW Motorrad logo."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R14",
+        "title": "Print advertising primary coverage must be in dealer AOR",
+        "kind": "judgment",
+        "applies_to": [
+          "newspaper"
+        ],
+        "check": null,
+        "source": {
+          "section": "4",
+          "quote": "The print media primary coverage area must be in the dealer's AOR, understanding due to the nature of the medium, some coverage may spill into surrounding area."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R15",
+        "title": "National publications prohibited",
+        "kind": "judgment",
+        "applies_to": [
+          "newspaper"
+        ],
+        "check": null,
+        "source": {
+          "section": "4",
+          "quote": "National publications are prohibited."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R16",
+        "title": "Copyright notice required in advertising",
+        "kind": "judgment",
+        "applies_to": [],
+        "check": {
+          "type": "required_text",
+          "text": "\u00a92026 BMW of North America, LLC"
+        },
+        "source": {
+          "section": "5",
+          "quote": "BMW Motorrad Copyright information is required to be included in all advertising with the exception of mobile and digital banners."
+        },
+        "on_fail": "Include copyright notice \u00a92026 BMW of North America, LLC in advertising."
+      },
+      {
+        "id": "R17",
+        "title": "Multi-brand ads prorated by brand coverage",
+        "kind": "measured",
+        "applies_to": [],
+        "check": {
+          "type": "amounts_match",
+          "tolerance_usd": 0
+        },
+        "source": {
+          "section": "2",
+          "quote": "For example, if 4 brands are displayed in an ad, only 25% of the cost will be eligible for co-op support."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R18",
+        "title": "No demo units or used products eligible for co-op",
+        "kind": "judgment",
+        "applies_to": [],
+        "check": null,
+        "source": {
+          "section": "2",
+          "quote": "Demo units and used products do not qualify for co-op support."
+        },
+        "on_fail": null
+      },
+      {
+        "id": "R19",
+        "title": "Prior approval required for custom creative",
+        "kind": "judgment",
+        "applies_to": [],
+        "check": null,
+        "source": {
+          "section": "2",
+          "quote": "All media, excluding ads created on Ad Builder/Marketing Portal, require prior approval review to qualify for reimbursement."
+        },
+        "on_fail": "Submit creative for prior approval to Papirfly."
+      },
+      {
+        "id": "R20",
+        "title": "Event pre-approval required one month prior",
+        "kind": "measured",
+        "applies_to": [],
+        "check": {
+          "type": "date_window",
+          "activity_start": "2026-01-01",
+          "activity_end": "2026-12-31",
+          "claim_within_days": null,
+          "claim_by": null
+        },
+        "source": {
+          "section": "2",
+          "quote": "You must submit your event for pre-approval within the co-op portal at least one month prior to your event."
+        },
+        "on_fail": "Submit event pre-approval at least one month before event date."
+      }
+    ]
+  },
+  "usage": {
+    "model": "claude-haiku-4-5-20251001",
+    "tokens_in": 11025,
+    "tokens_out": 2474,
+    "cost_usd": 0.023395
+  }
+}

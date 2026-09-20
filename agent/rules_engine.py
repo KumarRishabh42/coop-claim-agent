@@ -148,20 +148,23 @@ def _check_date_window(rule, facts, manifest, documents_present) -> CheckResult:
         return _base(rule, "unsure", "No invoice date on file, so the claim window can't be checked.",
                      ask="Upload the vendor invoice so the claim date can be verified.")
 
-    activity_start = _parse_date(rule.check.activity_start)
-    activity_end = _parse_date(rule.check.activity_end)
-    claim_by = _parse_date(rule.check.claim_by)
-    within_days = rule.check.claim_within_days
+    # A real guide doesn't always state every one of these (e.g. no hard
+    # calendar deadline, just a rolling window) — a field the model omitted
+    # or left null is "no constraint", not a crash.
+    activity_start = _parse_date(getattr(rule.check, "activity_start", None))
+    activity_end = _parse_date(getattr(rule.check, "activity_end", None))
+    claim_by = _parse_date(getattr(rule.check, "claim_by", None))
+    within_days = getattr(rule.check, "claim_within_days", None)
 
-    if not (activity_start <= invoice_date <= activity_end):
+    if activity_start and activity_end and not (activity_start <= invoice_date <= activity_end):
         return _base(rule, "fail", f"Invoice date {invoice_date} is outside the {activity_start}–{activity_end} program window.",
                      {"invoice_date": str(invoice_date)})
 
     days_elapsed = (submitted - invoice_date).days if submitted else None
-    if days_elapsed is not None and days_elapsed > within_days:
+    if days_elapsed is not None and within_days is not None and days_elapsed > within_days:
         return _base(rule, "fail", f"Claim was submitted {days_elapsed} days after the invoice date. The limit is {within_days} days.",
                      {"days_elapsed": days_elapsed, "limit_days": within_days})
-    if submitted and submitted > claim_by:
+    if submitted and claim_by and submitted > claim_by:
         return _base(rule, "fail", f"Claim was submitted on {submitted}, after the {claim_by} program deadline.",
                      {"submitted": str(submitted), "claim_by": str(claim_by)})
     return _base(rule, "pass", "Invoice and claim dates are within the program window.",

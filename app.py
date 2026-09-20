@@ -218,7 +218,9 @@ def claim_upload_form(request: Request, conn: sqlite3.Connection = Depends(db)):
     program_id = _program_id(conn)
     program = conn.execute("SELECT * FROM programs WHERE id=?", (program_id,)).fetchone()
     import datetime
-    today = datetime.date.today().isoformat()
+    # DECISION: hardcoded rather than today's real date — a real date drifts
+    # day to day and can wander outside a guide's claim window during a demo.
+    today = "2026-10-01"
     return render(request, "claim_upload.html", {"program": program, "today": today}, conn, "claims")
 
 

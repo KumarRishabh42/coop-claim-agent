@@ -7,6 +7,7 @@ try the app immediately without hunting for real documents.
 |---|---|---|
 | `ad-pass.png` | Ad | Every rule passes — clean logo sizes, tagline present |
 | `ad-fail.png` | Ad | Brand logo too small (0.7 in, needs ~1.2 in) — fails on section 3 |
+| `bmw-ad-pass.png` / `bmw-ad-fail.png` | Ad | Same idea, BMW Motorrad-themed. Includes a real motorcycle photo — [BMW motorcycle vintage.jpg](https://commons.wikimedia.org/wiki/File:BMW_motorcycle_vintage.jpg) by Adonis Chen, [CC BY 2.0](https://creativecommons.org/licenses/by/2.0/), via Wikimedia Commons |
 | `invoice.png` | Invoice | $760, dated 2026-09-14 |
 | `payment.png` | Proof of payment | $760, matches the invoice |
 | `claim_form.png` | Claim form | $760, matches |

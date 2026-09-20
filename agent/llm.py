@@ -104,6 +104,21 @@ def _save_recording(task: str, key: str, raw: dict, usage: Usage) -> None:
     path.write_text(json.dumps({"result": raw, "usage": usage.model_dump(exclude={"mode"})}, indent=2, default=str))
 
 
+def _image_media_type(img: bytes) -> str:
+    """Sniffs the real format rather than trusting a file's extension — a
+    ".png" upload (e.g. from WhatsApp) is very often actually a JPEG, and
+    Anthropic's API rejects a media_type that doesn't match the bytes."""
+    if img[:8] == b"\x89PNG\r\n\x1a\n":
+        return "image/png"
+    if img[:3] == b"\xff\xd8\xff":
+        return "image/jpeg"
+    if img[:6] in (b"GIF87a", b"GIF89a"):
+        return "image/gif"
+    if img[:4] == b"RIFF" and img[8:12] == b"WEBP":
+        return "image/webp"
+    return "image/png"
+
+
 def _call_live(text, images, system, cfg, mode, retry_hint: bool = False) -> tuple[dict, Usage]:
     api_key = os.environ.get("LLM_API_KEY") or os.environ.get("ANTHROPIC_API_KEY")
     if not api_key:
@@ -115,7 +130,7 @@ def _call_live(text, images, system, cfg, mode, retry_hint: bool = False) -> tup
     for img in images or []:
         content.append({
             "type": "image",
-            "source": {"type": "base64", "media_type": "image/png", "data": base64.b64encode(img).decode()},
+            "source": {"type": "base64", "media_type": _image_media_type(img), "data": base64.b64encode(img).decode()},
         })
     if retry_hint:
         content.append({"type": "text", "text": "Your previous answer did not match the required JSON schema. Return ONLY valid JSON matching it, no prose."})

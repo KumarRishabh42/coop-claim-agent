@@ -8,6 +8,7 @@ try the app immediately without hunting for real documents.
 | `ad-pass.png` | Ad | Every rule passes — clean logo sizes, tagline present |
 | `ad-fail.png` | Ad | Brand logo too small (0.7 in, needs ~1.2 in) — fails on section 3 |
 | `bmw-ad-pass.png` / `bmw-ad-fail.png` | Ad | Same idea, BMW Motorrad-themed. Includes a real motorcycle photo — [BMW_S1000_XR.jpg](https://commons.wikimedia.org/wiki/File:BMW_S1000_XR.jpg) by Corvettec6r, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), via Wikimedia Commons |
+| `bmw-ad-built-for-whats-next.png` / `bmw-ad-huge-discounts.png` | Ad | Two polished, portrait-format BMW ad mockups — pass against the hardcoded BMW ruleset (packet G below); use `width_in`/`height_in` ≈ 4x6 |
 | `invoice.png` | Invoice | $760, dated 2026-09-14 |
 | `payment.png` | Proof of payment | $760, matches the invoice |
 | `claim_form.png` | Claim form | $760, matches |
